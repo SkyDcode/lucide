@@ -1,26 +1,36 @@
 {
   "name": "lucide-backend",
   "version": "1.0.0",
-  "description": "Backend API pour LUCIDE",
+  "description": "LUCIDE - Application OSINT Backend API",
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js",
     "test": "jest",
-    "test:watch": "jest --watch"
+    "db:init": "node scripts/initDatabase.js",
+    "db:seed": "node scripts/seedDatabase.js"
   },
+  "keywords": ["osint", "investigation", "police", "graph", "analysis"],
+  "author": "Expert OSINT - Police Judiciaire",
+  "license": "PROPRIETARY",
   "dependencies": {
     "express": "^4.18.2",
-    "cors": "^2.8.5",
     "sqlite3": "^5.1.6",
-    "multer": "^1.4.5",
-    "helmet": "^7.0.0",
+    "cors": "^2.8.5",
+    "multer": "^1.4.5-lts.1",
+    "helmet": "^7.1.0",
+    "morgan": "^1.10.0",
+    "joi": "^17.11.0",
+    "uuid": "^9.0.1",
     "compression": "^1.7.4",
-    "morgan": "^1.10.0"
+    "express-rate-limit": "^7.1.5"
   },
   "devDependencies": {
-    "nodemon": "^3.0.1",
-    "jest": "^29.5.0",
+    "nodemon": "^3.0.2",
+    "jest": "^29.7.0",
     "supertest": "^6.3.3"
+  },
+  "engines": {
+    "node": ">=16.0.0"
   }
 }
