@@ -1,6 +1,7 @@
 // backend/core/relationships/routes/relationshipRoutes.js - Routes pour les relations
 const express = require('express');
 const RelationshipController = require('../controllers/RelationshipController');
+const GraphController = require('../controllers/GraphController');
 const { ValidationError } = require('../../../shared/middleware/errorHandler');
 
 const router = express.Router();
@@ -141,6 +142,127 @@ router.get('/folder/:folderId/circular', validateId('folderId'), RelationshipCon
  * @access  Private
  */
 router.get('/folder/:folderId/graph', validateId('folderId'), RelationshipController.getRelationshipGraph);
+
+// ===========================================
+// ROUTES D'ANALYSE DE GRAPHE (NOUVELLES)
+// ===========================================
+
+/**
+ * @route   GET /api/relationships/folder/:folderId/graph/analysis
+ * @desc    Analyser le graphe complet d'un dossier
+ * @access  Private
+ */
+router.get('/folder/:folderId/graph/analysis', 
+  validateId('folderId'), 
+  GraphController.validateGraphParams,
+  GraphController.cacheGraphAnalysis(5),
+  GraphController.analyzeGraph
+);
+
+/**
+ * @route   GET /api/relationships/folder/:folderId/graph/visualization
+ * @desc    Obtenir les données de visualisation pour D3.js
+ * @access  Private
+ */
+router.get('/folder/:folderId/graph/visualization', 
+  validateId('folderId'), 
+  GraphController.validateGraphParams,
+  GraphController.getVisualizationData
+);
+
+/**
+ * @route   GET /api/relationships/folder/:folderId/graph/centrality
+ * @desc    Calculer les métriques de centralité
+ * @access  Private
+ */
+router.get('/folder/:folderId/graph/centrality', 
+  validateId('folderId'), 
+  GraphController.validateGraphParams,
+  GraphController.cacheGraphAnalysis(10),
+  GraphController.getCentralityMetrics
+);
+
+/**
+ * @route   GET /api/relationships/folder/:folderId/graph/communities
+ * @desc    Détecter les communautés dans le graphe
+ * @access  Private
+ */
+router.get('/folder/:folderId/graph/communities', 
+  validateId('folderId'), 
+  GraphController.validateGraphParams,
+  GraphController.cacheGraphAnalysis(10),
+  GraphController.getCommunityDetection
+);
+
+/**
+ * @route   GET /api/relationships/folder/:folderId/graph/health
+ * @desc    Obtenir le score de santé du réseau
+ * @access  Private
+ */
+router.get('/folder/:folderId/graph/health', 
+  validateId('folderId'), 
+  GraphController.getNetworkHealth
+);
+
+/**
+ * @route   GET /api/relationships/folder/:folderId/graph/metrics
+ * @desc    Obtenir les métriques de base rapides
+ * @access  Private
+ */
+router.get('/folder/:folderId/graph/metrics', 
+  validateId('folderId'), 
+  GraphController.getBasicMetrics
+);
+
+/**
+ * @route   GET /api/relationships/folder/:folderId/graph/validate
+ * @desc    Valider la structure du graphe
+ * @access  Private
+ */
+router.get('/folder/:folderId/graph/validate', 
+  validateId('folderId'), 
+  GraphController.validateGraph
+);
+
+/**
+ * @route   GET /api/relationships/folder/:folderId/graph/suggestions
+ * @desc    Suggérer des améliorations pour le graphe
+ * @access  Private
+ */
+router.get('/folder/:folderId/graph/suggestions', 
+  validateId('folderId'), 
+  GraphController.getGraphSuggestions
+);
+
+/**
+ * @route   GET /api/relationships/folder/:folderId/graph/export
+ * @desc    Exporter l'analyse complète du graphe
+ * @access  Private
+ */
+router.get('/folder/:folderId/graph/export', 
+  validateId('folderId'), 
+  GraphController.validateGraphParams,
+  GraphController.exportGraphAnalysis
+);
+
+/**
+ * @route   GET /api/relationships/graph/paths/:sourceId/:targetId
+ * @desc    Analyser les chemins entre entités
+ * @access  Private
+ */
+router.get('/graph/paths/:sourceId/:targetId', 
+  validateId('sourceId'), 
+  validateId('targetId'),
+  GraphController.validateGraphParams,
+  GraphController.analyzePaths
+);
+
+/**
+ * @route   GET /api/relationships/graph/health
+ * @desc    Health check du service d'analyse de graphe
+ * @access  Private
+ */
+router.get('/graph/health', GraphController.healthCheck);
 
 // ===========================================
 // ROUTES PAR ENTITÉ
@@ -331,7 +453,7 @@ router.post('/export', (req, res, next) => {
 // ===========================================
 
 /**
- * Middleware de gestion d'erreurs spécifique aux relations
+ * Middleware de gestion d'erreurs spécifique aux relations et graphes
  */
 router.use((error, req, res, next) => {
   // Log de l'erreur pour debug
@@ -352,9 +474,9 @@ router.use((error, req, res, next) => {
   if (error.message.includes('SQLITE_CONSTRAINT_UNIQUE')) {
     error.message = 'Une relation identique existe déjà entre ces entités';
   }
-  
-  // Passer au middleware d'erreur global
-  next(error);
+
+  // Traiter les erreurs spécifiques au graphe
+  GraphController.handleGraphError(error, req, res, next);
 });
 
 module.exports = router;
