@@ -13,25 +13,34 @@
     "ssl:generate": "node scripts/generateSSL.js",
     "ssl:info": "node scripts/sslInfo.js"
   },
-  "keywords": ["osint", "investigation", "police", "graph", "analysis", "https", "security"],
+  "keywords": [
+    "osint",
+    "investigation",
+    "police",
+    "graph",
+    "analysis",
+    "https",
+    "security"
+  ],
   "author": "Expert OSINT - Police Judiciaire",
   "license": "PROPRIETARY",
   "dependencies": {
-    "express": "^4.18.2",
-    "sqlite3": "^5.1.6",
-    "cors": "^2.8.5",
-    "multer": "^1.4.5-lts.1",
-    "helmet": "^7.1.0",
-    "morgan": "^1.10.0",
-    "joi": "^17.11.0",
-    "uuid": "^9.0.1",
     "compression": "^1.7.4",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.1",
+    "express": "^4.18.2",
     "express-rate-limit": "^7.1.5",
-    "node-forge": "^1.3.1"
+    "helmet": "^7.1.0",
+    "joi": "^17.11.0",
+    "morgan": "^1.10.0",
+    "multer": "^1.4.5-lts.1",
+    "node-forge": "^1.3.1",
+    "sqlite3": "^5.1.6",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
-    "nodemon": "^3.0.2",
     "jest": "^29.7.0",
+    "nodemon": "^3.0.2",
     "supertest": "^6.3.3"
   },
   "engines": {
