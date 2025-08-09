@@ -1,5 +1,5 @@
 // backend/shared/middleware/fileUpload.js
-const { makeMulter, ALLOWED_MIMES } = require('../../config/multer');
+const { makeMulter } = require('../../config/multer'); // <= ce chemin suppose le fichier ci-dessus
 
 function mapMulterError(err) {
   if (!err) return null;
@@ -36,8 +36,4 @@ function uploadArray(field = 'files', maxCount = 10) {
   };
 }
 
-module.exports = {
-  uploadSingle,
-  uploadArray,
-  ALLOWED_MIMES,
-};
+module.exports = { uploadSingle, uploadArray };

@@ -11,15 +11,15 @@ function slugify(str) {
   return String(str)
     .normalize('NFKD')
     .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-zA-Z0-9-_\.]+/g, '-')
+    .replace(/[^a-zA-Z0-9-_.]+/g, '-')
     .replace(/-{2,}/g, '-')
     .replace(/^-|-$/g, '')
     .toLowerCase();
 }
 
 function safeBasename(name) {
-  const n = path.parse(name).name;
-  return slugify(n) || 'file';
+  const base = path.parse(String(name)).name;
+  return slugify(base) || 'file';
 }
 
 function getExtFromMimetype(mime, originalName = '') {
@@ -52,7 +52,6 @@ function deleteIfExists(filePath) {
   try {
     if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
   } catch (e) {
-    // on journalise mais on ne jette pas
     console.warn('deleteIfExists warning:', e?.message);
   }
 }
