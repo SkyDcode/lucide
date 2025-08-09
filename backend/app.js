@@ -12,6 +12,7 @@ const path = require('path');
 
 const mediaRoutes = require('./core/media/routes/mediaRoutes');
 const relationshipRoutes = require('./core/relationships/routes/relationshipRoutes');
+const exportRoutes = require('./core/export/routes/exportRoutes');
 
 // Import middleware personnalisés
 const { errorHandler } = require('./shared/middleware/errorHandler');
@@ -40,6 +41,9 @@ const httpsConfig = getHTTPSConfig();
 if (httpsConfig.enabled && httpsConfig.redirectHTTP) {
   app.use(httpsRedirect());
 }
+
+
+app.use('/api/export', exportRoutes);
 
 // Headers de sécurité HTTPS
 app.use(securityHeaders());

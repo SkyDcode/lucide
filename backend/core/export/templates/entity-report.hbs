@@ -1,0 +1,126 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Fiche entité — {{entity.name}} (#{{entity.id}})</title>
+  <style>
+    body { font-family: Arial, sans-serif; font-size: 12px; color: #111; }
+    h1 { font-size: 20px; margin: 0 0 4px; }
+    h2 { font-size: 14px; margin: 18px 0 6px; border-bottom: 1px solid #ddd; padding-bottom: 4px; }
+    .muted { color: #666; }
+    .meta { margin-bottom: 10px; }
+    table { width: 100%; border-collapse: collapse; margin: 6px 0; }
+    th, td { border: 1px solid #e5e5e5; padding: 6px; text-align: left; vertical-align: top; }
+    th { background: #fafafa; }
+    .k { width: 28%; white-space: nowrap; }
+    .badge { display: inline-block; padding: 2px 6px; border: 1px solid #999; border-radius: 3px; font-size: 10px; }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .small { font-size: 10px; }
+    .mb8 { margin-bottom: 8px; }
+    .mb4 { margin-bottom: 4px; }
+  </style>
+</head>
+<body>
+  <h1>Fiche entité <span class="muted">#{{entity.id}}</span></h1>
+  <div class="meta">
+    <span class="badge">{{upper entity.type}}</span>
+    {{#if folder}}
+      — Dossier: <strong>{{folder.name}}</strong> (#{{folder.id}})
+    {{/if}}
+    <div class="small muted">Créé: {{dateISO entity.created_at}} — MAJ: {{dateISO entity.updated_at}}</div>
+  </div>
+
+  <h2>Identité</h2>
+  <table>
+    <tr><th class="k">Nom</th><td>{{entity.name}}</td></tr>
+    <tr><th class="k">Type</th><td>{{entity.type}}</td></tr>
+    <tr><th class="k">ID</th><td>{{entity.id}}</td></tr>
+    <tr><th class="k">Dossier</th><td>{{entity.folder_id}}</td></tr>
+  </table>
+
+  <h2>Données (attributs)</h2>
+  <table>
+    <thead><tr><th class="k">Clé</th><th>Valeur</th></tr></thead>
+    <tbody>
+      {{#if attributes.length}}
+        {{#each attributes}}
+          <tr>
+            <td class="k">{{this.key}}</td>
+            <td><pre style="margin:0;white-space:pre-wrap;">{{this.value}}</pre></td>
+          </tr>
+        {{/each}}
+      {{else}}
+        <tr><td colspan="2" class="muted">Aucun attribut</td></tr>
+      {{/if}}
+    </tbody>
+  </table>
+
+  <div class="grid2">
+    <div>
+      <h2>Relations sortantes</h2>
+      <table>
+        <thead><tr><th>Type</th><th>→ Entité</th><th class="k">Horodatage</th></tr></thead>
+        <tbody>
+        {{#if outRels.length}}
+          {{#each outRels}}
+            <tr>
+              <td><span class="badge">{{this.type}}</span></td>
+              <td>[{{this.to_type}}] {{this.to_name}} (#{{this.to_entity}})</td>
+              <td class="small">{{dateISO this.created_at}}</td>
+            </tr>
+          {{/each}}
+        {{else}}
+          <tr><td colspan="3" class="muted">Aucune</td></tr>
+        {{/if}}
+        </tbody>
+      </table>
+    </div>
+
+    <div>
+      <h2>Relations entrantes</h2>
+      <table>
+        <thead><tr><th>Type</th><th>Entité →</th><th class="k">Horodatage</th></tr></thead>
+        <tbody>
+        {{#if inRels.length}}
+          {{#each inRels}}
+            <tr>
+              <td><span class="badge">{{this.type}}</span></td>
+              <td>[{{this.from_type}}] {{this.from_name}} (#{{this.from_entity}})</td>
+              <td class="small">{{dateISO this.created_at}}</td>
+            </tr>
+          {{/each}}
+        {{else}}
+          <tr><td colspan="3" class="muted">Aucune</td></tr>
+        {{/if}}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <h2>Pièces / Fichiers liés</h2>
+  <table>
+    <thead><tr><th>Fichier</th><th>Infos</th><th class="k">Hash</th></tr></thead>
+    <tbody>
+      {{#if files.length}}
+        {{#each files}}
+          <tr>
+            <td>
+              <div class="mb4"><strong>{{this.filename}}</strong></div>
+              <div class="small muted">Chemin local: {{this.path}}</div>
+              {{#if this.source_url}}<div class="small">Source: {{this.source_url}}</div>{{/if}}
+            </td>
+            <td>
+              <div class="small">MIME: {{this.mime_type}}</div>
+              <div class="small">Taille: {{this.size_h}}</div>
+              <div class="small">Capturé: {{dateISO this.captured_at}}</div>
+            </td>
+            <td class="small">{{this.sha256}}</td>
+          </tr>
+        {{/each}}
+      {{else}}
+        <tr><td colspan="3" class="muted">Aucun fichier lié</td></tr>
+      {{/if}}
+    </tbody>
+  </table>
+</body>
+</html>

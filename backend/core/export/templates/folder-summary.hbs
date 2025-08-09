@@ -1,0 +1,48 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Rapport dossier — {{folder.name}} (#{{folder.id}})</title>
+  <style>
+    body { font-family: Arial, sans-serif; font-size: 12px; color: #111; }
+    h1 { font-size: 20px; margin: 0 0 4px; }
+    h2 { font-size: 14px; margin: 18px 0 6px; border-bottom: 1px solid #ddd; padding-bottom: 4px; }
+    .muted { color: #666; }
+    table { width: 100%; border-collapse: collapse; margin: 6px 0; }
+    th, td { border: 1px solid #e5e5e5; padding: 6px; text-align: left; vertical-align: top; }
+    th { background: #fafafa; }
+    .small { font-size: 10px; }
+  </style>
+</head>
+<body>
+  <h1>Rapport dossier <span class="muted">#{{folder.id}}</span></h1>
+  <div class="small muted">Créé: {{dateISO folder.created_at}}</div>
+
+  <h2>Statistiques</h2>
+  <table>
+    <tr><th>Entités</th><td>{{stats.entities}}</td></tr>
+    <tr><th>Relations</th><td>{{stats.relationships}}</td></tr>
+  </table>
+
+  <h2>Entités</h2>
+  <table>
+    <thead><tr><th>Type</th><th>Nom</th><th>ID</th><th>Créé</th><th>MAJ</th><th>Degré</th></tr></thead>
+    <tbody>
+      {{#if entities.length}}
+        {{#each entities}}
+          <tr>
+            <td>{{this.type}}</td>
+            <td>{{this.name}}</td>
+            <td>{{this.id}}</td>
+            <td class="small">{{dateISO this.created_at}}</td>
+            <td class="small">{{dateISO this.updated_at}}</td>
+            <td>{{this.degree}}</td>
+          </tr>
+        {{/each}}
+      {{else}}
+        <tr><td colspan="6" class="muted">Aucune entité</td></tr>
+      {{/if}}
+    </tbody>
+  </table>
+</body>
+</html>
