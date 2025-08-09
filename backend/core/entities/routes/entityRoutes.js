@@ -2,6 +2,7 @@
 const express = require('express');
 const EntityController = require('../controllers/EntityController');
 const EntityTypeController = require('../controllers/EntityTypeController');
+const EntityMergeController = require('../controllers/EntityMergeController');
 
 const router = express.Router();
 
@@ -386,6 +387,26 @@ router.post('/:id/duplicate',
   EntityController.logAction('duplicate_entity'),
   EntityController.duplicateEntity
 );
+
+// backend/core/entities/routes/entityRoutes.js
+// ... imports existants
+const EntitySearchController = require('../controllers/EntitySearchController');
+
+// ... routes existantes
+// Recherche d'entités
+// GET /api/entities/search?q=...&folderId=...&type=...
+router.get('/search', EntitySearchController.search);
+
+
+// Fusion d'entités
+// POST /api/entities/merge  { targetId, sourceIds: number[], prefer?: 'target'|'source' }
+router.post('/merge', EntityMergeController.postMerge);
+
+// Détection de doublons
+// GET /api/entities/duplicates?folderId=123&minScore=60
+router.get('/duplicates', EntityMergeController.getDuplicates);
+
+
 
 // =============================================
 // MIDDLEWARE DE GESTION D'ERREURS
