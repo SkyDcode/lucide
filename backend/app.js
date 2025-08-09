@@ -16,12 +16,12 @@ const { loggingMiddleware } = require('./shared/middleware/logging');
 
 // Import configuration
 const { initializeDatabase, closeDatabase } = require('./config/database');
-const { 
-  createHTTPSServer, 
-  httpsRedirect, 
-  securityHeaders, 
+const {
+  createHTTPSServer,
+  httpsRedirect,
+  securityHeaders,
   getHTTPSConfig,
-  validateSSLConfig 
+  validateSSLConfig
 } = require('./config/https');
 
 // Variables globales pour les serveurs
@@ -42,51 +42,100 @@ if (httpsConfig.enabled && httpsConfig.redirectHTTP) {
 app.use(securityHeaders());
 
 // Configuration middleware sécurité (mise à jour pour HTTPS)
-app.use(helmet({
-  crossOriginEmbedderPolicy: false, // Pour compatibilité frontend
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"], // Pour React dev
-      imgSrc: ["'self'", "data:", "blob:"],
-      connectSrc: ["'self'"],
-      fontSrc: ["'self'"],
-      mediaSrc: ["'self'"],
-      objectSrc: ["'none'"],
-      baseSrc: ["'self'"],
-      formAction: ["'self'"]
+app.use(
+  helmet({
+    crossOriginEmbedderPolicy: false, // Pour compatibilité frontend
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"], // Pour React dev
+        imgSrc: ["'self'", 'data:', 'blob:'],
+        connectSrc: ["'self'"], // Les appels API externes ne sont pas bloqués si ce backend ne sert pas le HTML
+        fontSrc: ["'self'"],
+        mediaSrc: ["'self'"],
+        objectSrc: ["'none'"],
+        baseSrc: ["'self'"],
+        formAction: ["'self'"]
+      }
+    },
+    hsts: {
+      maxAge: 31536000,
+      includeSubDomains: true,
+      preload: true
     }
-  },
-  hsts: {
-    maxAge: 31536000,
-    includeSubDomains: true,
-    preload: true
+  })
+);
+
+/**
+ * ============================
+ *  CORS (amélioré + debug)
+ * ============================
+ */
+
+// Origines autorisées (ajuste si tu testes depuis une autre IP/port)
+const allowedOrigins =
+  process.env.NODE_ENV === 'production'
+    ? [
+        'https://localhost:3000',
+        'https://127.0.0.1:3000'
+      ]
+    : [
+        'http://localhost:3000',
+        'http://127.0.0.1:3000',
+        'https://localhost:3000',
+        'https://127.0.0.1:3000'
+        // ➕ Ajoute ici l'origine exacte du frontend si différente
+        // ex: 'http://192.168.1.50:3000'
+      ];
+
+// Configuration CORS avec fonction d'origine + prise en charge des requêtes sans "Origin"
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // Permettre les requêtes sans origine (ex: Postman, cURL, apps mobiles)
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.indexOf(origin) !== -1) {
+        return callback(null, true);
+      }
+
+      console.log('⚠️ Origine CORS non autorisée :', origin);
+      return callback(new Error('Non autorisé par CORS'));
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'X-Requested-With',
+      'Accept',
+      'Origin',
+      'X-Request-ID'
+    ],
+    optionsSuccessStatus: 200 // Support des anciens navigateurs
+  })
+);
+
+// Middleware de debugging CORS - À ajouter après la configuration CORS
+app.use((req, res, next) => {
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(`🌍 ${req.method} ${req.path} - Origin: ${req.get('Origin') || 'none'}`);
   }
-}));
+  next();
+});
 
-// Configuration CORS (mise à jour pour HTTPS)
-const corsOrigins = process.env.NODE_ENV === 'production' 
-  ? [
-      'https://localhost:3000',
-      'https://127.0.0.1:3000'
-    ]
-  : [
-      'http://localhost:3000', 
-      'http://127.0.0.1:3000',
-      'https://localhost:3000',  // Support HTTPS en développement
-      'https://127.0.0.1:3000'
-    ];
+// Middleware pour gérer les requêtes OPTIONS préalables
+app.options('*', (req, res) => {
+  console.log('✅ OPTIONS request handled for:', req.path);
+  res.status(200).end();
+});
 
-app.use(cors({
-  origin: corsOrigins,
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-  optionsSuccessStatus: 200 // Support des anciens navigateurs
-}));
-
-// Middleware généraux
+/**
+ * ============================
+ *  Middlewares généraux
+ * ============================
+ */
 app.use(compression()); // Compression gzip
 app.use(express.json({ limit: '50mb' })); // Parser JSON avec limite
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
@@ -101,6 +150,12 @@ if (process.env.NODE_ENV !== 'test') {
 
 // Servir les fichiers statiques (uploads)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+/**
+ * ============================
+ *  Routes
+ * ============================
+ */
 
 // Route de santé
 app.get('/health', (req, res) => {
@@ -151,10 +206,14 @@ app.all('/api/*', (req, res) => {
 // Middleware de gestion d'erreurs (doit être en dernier)
 app.use(errorHandler);
 
-// Fonction d'arrêt propre du serveur
+/**
+ * ============================
+ *  Arrêt propre
+ * ============================
+ */
 async function gracefulShutdown(signal) {
   console.log(`\n🛑 Signal ${signal} reçu - Arrêt propre du serveur...`);
-  
+
   try {
     // Arrêter d'accepter de nouvelles connexions
     if (httpsServer) {
@@ -164,7 +223,7 @@ async function gracefulShutdown(signal) {
       });
       console.log('✅ Serveur HTTPS fermé');
     }
-    
+
     if (httpServer) {
       console.log('🌐 Fermeture du serveur HTTP...');
       await new Promise((resolve) => {
@@ -172,28 +231,31 @@ async function gracefulShutdown(signal) {
       });
       console.log('✅ Serveur HTTP fermé');
     }
-    
+
     // Fermer la base de données
     console.log('🗄️ Fermeture de la base de données...');
     await closeDatabase();
     console.log('✅ Base de données fermée');
-    
+
     console.log('🎉 Arrêt propre terminé');
     process.exit(0);
-    
   } catch (error) {
-    console.error('❌ Erreur lors de l\'arrêt propre:', error);
+    console.error("❌ Erreur lors de l'arrêt propre:", error);
     process.exit(1);
   }
 }
 
-// Fonction de démarrage du serveur (mise à jour pour HTTPS)
+/**
+ * ============================
+ *  Démarrage serveur
+ * ============================
+ */
 async function startServer() {
   try {
     console.log('🚀 Démarrage de LUCIDE...');
     console.log(`📋 Environnement: ${process.env.NODE_ENV}`);
     console.log(`🔧 HTTPS activé: ${httpsConfig.enabled ? 'Oui' : 'Non'}`);
-    
+
     // Initialiser la base de données
     console.log('🔄 Initialisation de la base de données...');
     await initializeDatabase();
@@ -209,22 +271,22 @@ async function startServer() {
 
     // Valider la configuration SSL
     const sslValid = await validateSSLConfig();
-    
+
     if (httpsConfig.enabled && sslValid) {
       // Démarrer le serveur HTTPS
       httpsServer = await createHTTPSServer(app);
       const httpsPort = httpsConfig.port;
-      
+
       await new Promise((resolve) => {
         httpsServer.listen(httpsPort, () => {
           console.log('✅ Serveur HTTPS démarré avec succès');
           console.log(`🔒 HTTPS: https://localhost:${httpsPort}`);
           console.log(`📍 API: https://localhost:${httpsPort}/api`);
           console.log(`🏥 Health: https://localhost:${httpsPort}/health`);
-          
+
           if (process.env.NODE_ENV !== 'production') {
             console.log('🔧 Mode développement avec HTTPS activé');
-            console.log('⚠️  Certificat auto-signé - accepter l\'exception dans le navigateur');
+            console.log("⚠️  Certificat auto-signé - accepter l'exception dans le navigateur");
           }
           resolve();
         });
@@ -240,7 +302,6 @@ async function startServer() {
           });
         });
       }
-      
     } else if (httpsConfig.enabled && !sslValid) {
       console.warn('⚠️  HTTPS configuré mais certificats invalides, démarrage en HTTP');
       await startHTTPServer();
@@ -262,7 +323,6 @@ async function startServer() {
     console.log('🛑 Pour arrêter: Ctrl+C');
     console.log('🔄 Pour redémarrer: rs (avec nodemon)');
     console.log('====================\n');
-
   } catch (error) {
     console.error('❌ Erreur lors du démarrage du serveur:', error);
     process.exit(1);
@@ -277,7 +337,7 @@ async function startHTTPServer() {
       console.log(`🌐 HTTP: http://localhost:${PORT}`);
       console.log(`📍 API: http://localhost:${PORT}/api`);
       console.log(`🏥 Health: http://localhost:${PORT}/health`);
-      
+
       if (process.env.NODE_ENV !== 'production') {
         console.log('🔧 Mode développement HTTP activé');
       } else {

@@ -1,0 +1,315 @@
+/* frontend/src/modules/folders/components/FolderForm.css */
+
+.folder-form__modal {
+  /* Styles spécifiques à la modal du formulaire */
+}
+
+.folder-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Champs de formulaire */
+.folder-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.folder-form__field--error .folder-form__input,
+.folder-form__field--error .folder-form__textarea {
+  border-color: var(--color-danger);
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.1);
+}
+
+.folder-form__label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.folder-form__required {
+  color: var(--color-danger);
+  font-weight: 700;
+}
+
+.folder-form__input,
+.folder-form__textarea {
+  padding: 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  font-size: 0.875rem;
+  transition: var(--transition);
+  font-family: inherit;
+}
+
+.folder-form__input:focus,
+.folder-form__textarea:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-color: var(--color-primary);
+}
+
+.folder-form__input:disabled,
+.folder-form__textarea:disabled {
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+}
+
+.folder-form__input::placeholder,
+.folder-form__textarea::placeholder {
+  color: var(--color-text-muted);
+}
+
+.folder-form__textarea {
+  resize: vertical;
+  min-height: 80px;
+  line-height: 1.5;
+}
+
+/* Compteur de caractères */
+.folder-form__char-count {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  text-align: right;
+  margin-top: -0.25rem;
+}
+
+.folder-form__field--error .folder-form__char-count {
+  color: var(--color-danger);
+}
+
+/* Erreurs */
+.folder-form__errors {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.folder-form__error {
+  font-size: 0.75rem;
+  color: var(--color-danger);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.folder-form__error::before {
+  content: "⚠️";
+  font-size: 0.875rem;
+}
+
+/* Section d'informations */
+.folder-form__info {
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  padding: 1rem;
+}
+
+.folder-form__info-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0 0 0.75rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.folder-form__info-title::before {
+  content: "ℹ️";
+}
+
+.folder-form__info-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.75rem;
+}
+
+.folder-form__info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.folder-form__info-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.folder-form__info-value {
+  font-size: 0.875rem;
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+/* Section d'aide */
+.folder-form__help {
+  background-color: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-radius: var(--border-radius);
+  padding: 1rem;
+}
+
+.folder-form__help-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #0369a1;
+  margin: 0 0 0.75rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.folder-form__help-list {
+  margin: 0;
+  padding-left: 1.25rem;
+  color: #0369a1;
+}
+
+.folder-form__help-list li {
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  margin-bottom: 0.25rem;
+}
+
+.folder-form__help-list li:last-child {
+  margin-bottom: 0;
+}
+
+/* États de validation */
+.folder-form__field--valid .folder-form__input,
+.folder-form__field--valid .folder-form__textarea {
+  border-color: var(--color-success);
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.1);
+}
+
+.folder-form__field--valid .folder-form__label::after {
+  content: "✓";
+  color: var(--color-success);
+  font-weight: 700;
+  margin-left: auto;
+}
+
+/* Animation pour les champs */
+.folder-form__field {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .folder-form {
+    gap: 1.25rem;
+  }
+
+  .folder-form__input,
+  .folder-form__textarea {
+    padding: 0.625rem;
+    font-size: 1rem; /* Éviter le zoom sur iOS */
+  }
+
+  .folder-form__info-content {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+
+  .folder-form__help {
+    padding: 0.75rem;
+  }
+
+  .folder-form__help-list {
+    padding-left: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .folder-form__input,
+  .folder-form__textarea {
+    padding: 0.5rem;
+  }
+
+  .folder-form__info,
+  .folder-form__help {
+    padding: 0.75rem;
+  }
+
+  .folder-form__char-count {
+    font-size: 0.7rem;
+  }
+}
+
+/* Thème sombre */
+@media (prefers-color-scheme: dark) {
+  .folder-form__help {
+    background-color: #082f49;
+    border-color: #075985;
+  }
+
+  .folder-form__help-title,
+  .folder-form__help-list {
+    color: #38bdf8;
+  }
+
+  .folder-form__info {
+    background-color: #1e293b;
+    border-color: #475569;
+  }
+}
+
+/* États de focus améliorés */
+.folder-form__input:focus-within,
+.folder-form__textarea:focus-within {
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Animation pour les erreurs */
+.folder-form__field--error {
+  animation: shake 0.3s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
+/* Amélioration de l'accessibilité */
+.folder-form__input:invalid,
+.folder-form__textarea:invalid {
+  box-shadow: none; /* Désactiver les styles natifs du navigateur */
+}
+
+/* Styles pour les utilisateurs qui préfèrent moins d'animations */
+@media (prefers-reduced-motion: reduce) {
+  .folder-form__field,
+  .folder-form__field--error {
+    animation: none;
+  }
+
+  .folder-form__input,
+  .folder-form__textarea {
+    transition: none;
+  }
+}

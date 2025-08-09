@@ -4,12 +4,73 @@
     <meta charset="utf-8" />
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
-    <meta name="description" content="LUCIDE - Application OSINT pour enquêtes" />
-    <title>LUCIDE - OSINT Investigation Tool</title>
+    <meta name="theme-color" content="#3b82f6" />
+    <meta name="description" content="LUCIDE - Application OSINT pour Police Judiciaire" />
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    
+    <!-- Titre de l'application -->
+    <title>LUCIDE - Application OSINT</title>
+    
+    <!-- Styles de base pour éviter le flash -->
+    <style>
+      body {
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+          'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+          sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        background-color: #f8fafc;
+      }
+      
+      code {
+        font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+          monospace;
+      }
+      
+      /* Loading spinner initial */
+      #loading-spinner {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+      }
+      
+      .spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid #e5e7eb;
+        border-top: 4px solid #3b82f6;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+      
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    </style>
   </head>
   <body>
-    <noscript>Vous devez activer JavaScript pour utiliser cette application.</noscript>
-    <div id="root"></div>
+    <noscript>
+      <div style="padding: 2rem; text-align: center; background: #fef2f2; color: #dc2626;">
+        <h2>JavaScript requis</h2>
+        <p>Vous devez activer JavaScript pour utiliser LUCIDE.</p>
+      </div>
+    </noscript>
+    
+    <!-- Point de montage React -->
+    <div id="root">
+      <!-- Spinner de chargement initial -->
+      <div id="loading-spinner">
+        <div class="spinner"></div>
+        <p style="color: #6b7280; margin: 0;">Chargement de LUCIDE...</p>
+      </div>
+    </div>
   </body>
 </html>
