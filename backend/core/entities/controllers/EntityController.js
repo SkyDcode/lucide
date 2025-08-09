@@ -4,6 +4,8 @@
 const EntityService = require('../services/EntityService');
 const { asyncHandler } = require('../../../shared/middleware/errorHandler');
 const { logger } = require('../../../shared/middleware/logging');
+const EntityValidator = require('../validators/EntityValidator');
+
 
 /**
  * Helpers de parsing sûrs pour les query params
@@ -48,6 +50,237 @@ class EntityController {
     });
   });
 
+  /**
+   * Middleware: validation de paramètres communs (pagination, etc.)
+   */
+  static validateCommonParams = (req, res, next) => {
+    try {
+      // Pagination standard ?page=&limit=
+      if (req.query.page || req.query.limit) {
+        const { page, limit } = EntityValidator.validatePagination({
+          page: req.query.page,
+          limit: req.query.limit
+        });
+        req.pagination = { page, limit };
+      }
+
+      // Optionnel: sécuriser quelques filtres fréquents
+      if (req.query.type) {
+        req.query.type = EntityValidator.validateEntityType(req.query.type);
+      }
+      next();
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  /**
+   * Middleware: ajoute un timestamp de début pour métriques per-request
+   */
+  static addRequestTiming = (req, res, next) => {
+    req.startTime = Date.now();
+    next();
+  };
+
+  /**
+   * Middleware factory: définit des headers de cache pour les GET
+   */
+  static setCacheHeaders = (seconds = 300) => (req, res, next) => {
+    if (req.method === 'GET') {
+      res.set('Cache-Control', `public, max-age=${seconds}, must-revalidate`);
+      res.set('Vary', 'Accept-Encoding, Origin');
+    }
+    next();
+  };
+
+  /**
+   * Middleware: contrôle de quotas (placeholder, prêt pour une implémentation réelle)
+   */
+  static checkQuotas = (req, res, next) => {
+    // TODO: brancher sur un vrai système de quotas si nécessaire
+    next();
+  };
+
+  /**
+   * Middleware factory: trace une action utilisateur / API
+   */
+  static logAction = (action) => async (req, res, next) => {
+    try {
+      await EntityService.logUserAction(action, {
+        requestId: req.requestId,
+        method: req.method,
+        path: req.originalUrl,
+        ip: req.ip,
+        userAgent: req.get('user-agent') || null
+      });
+    } catch (e) {
+      // On n'échoue pas la requête pour un log
+    }
+    next();
+  };
+
+  /**
+   * HEAD /:id — renvoie 200 si l’entité existe, 404 sinon
+   */
+  static checkEntityExists = asyncHandler(async (req, res) => {
+    const entity = await EntityService.getEntityById(req.params.id);
+    if (entity && (entity.data || entity.id)) {
+      return res.status(200).end();
+    }
+    return res.status(404).end();
+  });
+
+  /**
+   * GET /:id/exists — payload booléen
+   */
+  static getEntityExistence = asyncHandler(async (req, res) => {
+    const entity = await EntityService.getEntityById(req.params.id);
+    const exists = !!(entity && (entity.data || entity.id));
+    res.status(exists ? 200 : 404).json({
+      success: exists,
+      exists,
+      id: req.params.id,
+      timestamp: new Date().toISOString()
+    });
+  });
+
+  /**
+   * GET /count — nombre d’entités correspondant aux filtres
+   */
+  static getEntitiesCount = asyncHandler(async (req, res) => {
+    const folderId = req.query.folder_id;
+    const search = req.query.q || '';
+    const options = {
+      limit: parseInt(req.query.limit || '0', 10) || 0,
+      page: parseInt(req.query.page || '1', 10) || 1
+    };
+    const result = await EntityService.searchEntities(folderId, search, options);
+    const count =
+      (result && result.metadata && typeof result.metadata.resultsCount === 'number')
+        ? result.metadata.resultsCount
+        : (Array.isArray(result?.data) ? result.data.length : 0);
+
+    res.json({
+      success: true,
+      count,
+      timestamp: new Date().toISOString()
+    });
+  });
+
+  /**
+   * GET /recent — dernières entités
+   */
+  static getRecentEntities = asyncHandler(async (req, res) => {
+    const folderId = req.query.folder_id;
+    const limit = parseInt(req.query.limit || '10', 10);
+    const result = await EntityService.searchEntities(folderId, '', {
+      limit,
+      page: 1,
+      orderBy: 'created_at',
+      order: 'desc'
+    });
+    res.json({
+      success: true,
+      data: result?.data || [],
+      metadata: result?.metadata || {},
+      timestamp: new Date().toISOString()
+    });
+  });
+
+  /**
+   * GET /orphaned — entités sans relations (placeholder si non supporté par le modèle)
+   */
+  static getOrphanedEntities = asyncHandler(async (req, res) => {
+    // Si tu as un modèle/DAO pour détecter les orphelins, branche-le ici.
+    // Réponse neutre pour ne pas casser les routes:
+    res.status(501).json({
+      success: false,
+      message: 'Détection des entités orphelines non implémentée',
+      data: [],
+      timestamp: new Date().toISOString()
+    });
+  });
+
+  /**
+   * POST /analyze — petite analyse (ex. suggestions) sur un payload d’entités
+   */
+  static analyzeEntities = asyncHandler(async (req, res) => {
+    const payload = Array.isArray(req.body) ? req.body : [req.body];
+    // Exemple simple: suggestions sur la première entité
+    const first = payload[0] || {};
+    const suggestions = await EntityService.analyzeEntityForSuggestions(first);
+    res.json({
+      success: true,
+      data: { suggestions },
+      timestamp: new Date().toISOString()
+    });
+  });
+
+  /**
+   * GET /schema — expose (succinctement) le schéma de validation
+   */
+  static getEntitySchema = asyncHandler(async (req, res) => {
+    // On ne “dump” pas Joi, on expose juste les sections disponibles
+    res.json({
+      success: true,
+      schemas: [
+        'create', 'update', 'search', 'batch', 'position'
+      ],
+      timestamp: new Date().toISOString()
+    });
+  });
+
+  /**
+   * GET /metrics — métriques simples au niveau contrôleur
+   */
+  static getEntityMetrics = asyncHandler(async (req, res) => {
+    const now = Date.now();
+    const started = req.startTime || now;
+    res.json({
+      success: true,
+      metrics: {
+        requestDurationMs: now - started
+      },
+      timestamp: new Date().toISOString()
+    });
+  });
+
+  /**
+   * GET /health — healthcheck du module entités
+   */
+  static healthCheck = (req, res) => {
+    res.json({
+      status: 'OK',
+      module: 'entities',
+      timestamp: new Date().toISOString()
+    });
+  };
+
+  /**
+   * Middleware d’erreur spécifique au router des entités
+   * (branché avec router.use(...) en fin de fichier routes)
+   */
+  static handleEntityError = (err, req, res, next) => {
+    // Log basique
+    logger.error('Entity route error', {
+      message: err?.message,
+      code: err?.code,
+      requestId: req.requestId
+    });
+
+    const status = err?.statusCode || 500;
+    res.status(status).json({
+      success: false,
+      error: {
+        message: err?.message || 'Erreur interne',
+        code: err?.code || 'ENTITY_ERROR',
+        details: err?.details || null
+      },
+      requestId: req.requestId,
+      timestamp: new Date().toISOString()
+    });
+  };
+  
   /**
    * Récupérer toutes les entités d'un dossier
    * GET /api/entities/folder/:folderId
