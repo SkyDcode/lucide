@@ -5,6 +5,7 @@ import Textarea from '../../../components/ui/Form/Textarea';
 import EntityTypeSelector from './EntityTypeSelector';
 import DynamicAttributeForm from './DynamicAttributeForm';
 import useEntityTypes from '../hooks/useEntityTypes';
+import EntityMediaUpload from './EntityMediaUpload';
 
 export default function EntityForm({
   initial = {},
@@ -24,13 +25,11 @@ export default function EntityForm({
   const dynamicAttrs = useMemo(() => byKey.get(type)?.attributes ?? [], [byKey, type]);
 
   useEffect(() => {
-    // Si le type change, on conserve les champs communs et on reset les attributs non définis
     const next = {};
     for (const a of dynamicAttrs) {
       const k = a.name;
       if (k in attributes) next[k] = attributes[k];
       else {
-        // valeur par défaut simple selon type
         switch ((a.type || 'text').toLowerCase()) {
           case 'boolean': next[k] = false; break;
           case 'multiselect': next[k] = []; break;
@@ -106,6 +105,18 @@ export default function EntityForm({
         onChange={handleAttrChange}
         errors={errors}
       />
+
+      {/* Section médias */}
+      <div className="pt-2">
+        <div className="text-sm font-semibold text-gray-200 mb-2">Pièces jointes</div>
+        {initial?.id ? (
+          <EntityMediaUpload entityId={initial.id} folderId={folderId ?? initial.folder_id ?? null} />
+        ) : (
+          <div className="text-xs text-gray-400 bg-gray-900 border border-gray-800 rounded-md p-3">
+            Enregistrez d'abord l'entité pour pouvoir ajouter des fichiers.
+          </div>
+        )}
+      </div>
 
       <div className="flex justify-end gap-2 pt-2">
         {onCancel && (

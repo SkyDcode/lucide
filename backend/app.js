@@ -10,6 +10,8 @@ const compression = require('compression');
 const morgan = require('morgan');
 const path = require('path');
 
+const mediaRoutes = require('./core/media/routes/mediaRoutes');
+
 // Import middleware personnalisés
 const { errorHandler } = require('./shared/middleware/errorHandler');
 const { loggingMiddleware } = require('./shared/middleware/logging');
@@ -191,7 +193,7 @@ app.get('/api', (req, res) => {
 app.use('/api/folders', require('./core/folders/routes/folderRoutes'));
 app.use('/api/entities', require('./core/entities/routes/entityRoutes'));
 // app.use('/api/relationships', require('./core/relationships/routes/relationshipRoutes'));
-// app.use('/api/media', require('./core/media/routes/mediaRoutes'));
+app.use('/api/media', require('./core/media/routes/mediaRoutes'));
 // app.use('/api/export', require('./core/export/routes/exportRoutes'));
 
 // Route 404 pour API
