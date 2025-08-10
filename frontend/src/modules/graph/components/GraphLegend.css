@@ -1,0 +1,767 @@
+/* frontend/src/modules/graph/components/GraphLegend.css */
+
+/* Variables CSS pour la légende */
+:root {
+  --legend-bg: rgba(255, 255, 255, 0.96);
+  --legend-border: rgba(229, 231, 235, 0.8);
+  --legend-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --legend-backdrop: blur(12px);
+  --legend-border-radius: 12px;
+  --legend-transition: all 0.3s ease;
+}
+
+/* Conteneur principal de la légende */
+.graph-legend {
+  position: absolute;
+  z-index: 100;
+  background: var(--legend-bg);
+  backdrop-filter: var(--legend-backdrop);
+  border: 1px solid var(--legend-border);
+  border-radius: var(--legend-border-radius);
+  box-shadow: var(--legend-shadow);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  transition: var(--legend-transition);
+  min-width: 280px;
+  max-width: 350px;
+  max-height: 70vh;
+  overflow: hidden;
+}
+
+/* Positionnement de la légende */
+.graph-legend--top-left {
+  top: 20px;
+  left: 20px;
+}
+
+.graph-legend--top-right {
+  top: 20px;
+  right: 20px;
+}
+
+.graph-legend--bottom-left {
+  bottom: 20px;
+  left: 20px;
+}
+
+.graph-legend--bottom-right {
+  bottom: 20px;
+  right: 20px;
+}
+
+/* État réduit */
+.graph-legend--collapsed {
+  min-width: auto;
+  max-width: none;
+  width: auto;
+}
+
+/* Mode compact */
+.graph-legend--compact {
+  min-width: 250px;
+  max-width: 300px;
+}
+
+/* En-tête de la légende */
+.legend-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--legend-border);
+  background: rgba(249, 250, 251, 0.8);
+}
+
+.legend-header__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legend-header__icon {
+  font-size: 16px;
+}
+
+.legend-header__text {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.legend-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.legend-action-btn,
+.legend-expand-btn {
+  font-size: 12px !important;
+  padding: 4px 6px !important;
+  min-width: auto !important;
+}
+
+/* Corps de la légende */
+.legend-body {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Vue réduite */
+.legend-collapsed {
+  padding: 8px 12px;
+}
+
+.legend-collapsed__content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legend-collapsed__icon {
+  font-size: 16px;
+}
+
+.legend-collapsed__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.legend-collapsed__title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.legend-collapsed__stats {
+  font-size: 10px;
+  color: #6b7280;
+}
+
+/* Onglets */
+.legend-tabs {
+  display: flex;
+  background: rgba(243, 244, 246, 0.5);
+  border-bottom: 1px solid var(--legend-border);
+}
+
+.legend-tab {
+  flex: 1;
+  padding: 10px 12px;
+  background: none;
+  border: none;
+  font-size: 12px;
+  font-weight: 500;
+  color: #6b7280;
+  cursor: pointer;
+  transition: var(--legend-transition);
+  border-bottom: 2px solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.legend-tab:hover {
+  color: #374151;
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.legend-tab--active {
+  color: #3b82f6;
+  border-bottom-color: #3b82f6;
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.legend-tab__label {
+  font-size: 12px;
+}
+
+.legend-tab__count {
+  font-size: 10px;
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+  padding: 1px 4px;
+  border-radius: 8px;
+  min-width: 16px;
+  text-align: center;
+}
+
+.legend-tab--active .legend-tab__count {
+  background: rgba(59, 130, 246, 0.2);
+}
+
+/* Contenu */
+.legend-content-wrapper {
+  max-height: calc(70vh - 120px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #d1d5db #f3f4f6;
+}
+
+.legend-content-wrapper::-webkit-scrollbar {
+  width: 6px;
+}
+
+.legend-content-wrapper::-webkit-scrollbar-track {
+  background: #f3f4f6;
+  border-radius: 3px;
+}
+
+.legend-content-wrapper::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 3px;
+}
+
+.legend-content-wrapper::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+.legend-content {
+  padding: 16px;
+}
+
+/* Catégories */
+.legend-category {
+  margin-bottom: 20px;
+}
+
+.legend-category:last-child {
+  margin-bottom: 0;
+}
+
+.legend-category__header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(229, 231, 235, 0.5);
+}
+
+.legend-category__icon {
+  font-size: 14px;
+}
+
+.legend-category__name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  flex: 1;
+}
+
+.legend-category__count {
+  font-size: 11px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.legend-category__items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Éléments de légende */
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: var(--legend-transition);
+  border: 1px solid transparent;
+}
+
+.legend-item:hover {
+  background: rgba(243, 244, 246, 0.8);
+  border-color: rgba(209, 213, 219, 0.6);
+}
+
+.legend-item:active {
+  background: rgba(229, 231, 235, 0.8);
+}
+
+.legend-item__visual {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.legend-item__color {
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.legend-item__color--circle {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.legend-item__color--line {
+  width: 24px;
+  height: 3px;
+  border-radius: 2px;
+}
+
+.legend-item__icon {
+  font-size: 10px;
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.legend-item__content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.legend-item__name {
+  font-size: 13px;
+  font-weight: 500;
+  color: #374151;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.legend-item__count {
+  font-size: 11px;
+  color: #6b7280;
+  font-weight: 600;
+  background: rgba(243, 244, 246, 0.8);
+  padding: 2px 6px;
+  border-radius: 10px;
+  min-width: 20px;
+  text-align: center;
+}
+
+.legend-item__description {
+  font-size: 11px;
+  color: #9ca3af;
+  line-height: 1.3;
+  margin-top: 2px;
+}
+
+/* États vides */
+.legend-empty {
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.legend-empty__message {
+  font-size: 14px;
+  color: #6b7280;
+  font-style: italic;
+}
+
+/* Statistiques */
+.legend-statistics {
+  margin-bottom: 20px;
+}
+
+.legend-statistics__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 12px;
+}
+
+.legend-statistics__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.legend-stat {
+  text-align: center;
+  padding: 12px;
+  background: rgba(249, 250, 251, 0.8);
+  border: 1px solid rgba(229, 231, 235, 0.5);
+  border-radius: 8px;
+}
+
+.legend-stat__value {
+  font-size: 20px;
+  font-weight: 700;
+  color: #3b82f6;
+  line-height: 1;
+}
+
+.legend-stat__label {
+  font-size: 11px;
+  color: #6b7280;
+  font-weight: 500;
+  margin-top: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Codage couleur */
+.legend-color-coding,
+.legend-size-coding {
+  margin-bottom: 20px;
+}
+
+.legend-color-coding:last-child,
+.legend-size-coding:last-child {
+  margin-bottom: 0;
+}
+
+.legend-color-coding__title,
+.legend-size-coding__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 12px;
+}
+
+.legend-color-coding__items,
+.legend-size-coding__items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.legend-coding-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+  border-radius: 4px;
+}
+
+.legend-coding-item__visual {
+  display: flex;
+  align-items: center;
+  width: 24px;
+  justify-content: center;
+}
+
+.legend-coding-item__circle {
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.legend-coding-item__circle--small {
+  width: 8px;
+  height: 8px;
+  background-color: #9ca3af;
+}
+
+.legend-coding-item__circle--medium {
+  width: 12px;
+  height: 12px;
+  background-color: #6b7280;
+}
+
+.legend-coding-item__circle--large {
+  width: 16px;
+  height: 16px;
+  background-color: #374151;
+}
+
+.legend-coding-item__circle--highlighted {
+  box-shadow: 0 0 8px rgba(251, 191, 36, 0.4);
+}
+
+.legend-coding-item__line {
+  height: 2px;
+  width: 20px;
+  border-radius: 1px;
+}
+
+.legend-coding-item__line--thick {
+  height: 3px;
+}
+
+.legend-coding-item__label {
+  font-size: 12px;
+  color: #374151;
+  font-weight: 500;
+}
+
+/* Pied de page */
+.legend-footer {
+  padding: 12px 16px;
+  border-top: 1px solid var(--legend-border);
+  background: rgba(249, 250, 251, 0.8);
+}
+
+.legend-footer__help {
+  font-size: 11px;
+  color: #6b7280;
+  text-align: center;
+  font-style: italic;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .graph-legend {
+    min-width: 260px;
+    max-width: 280px;
+    max-height: 60vh;
+  }
+  
+  .graph-legend--top-left,
+  .graph-legend--top-right,
+  .graph-legend--bottom-left,
+  .graph-legend--bottom-right {
+    position: fixed;
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
+    top: auto;
+    max-width: none;
+    width: auto;
+  }
+  
+  .legend-header {
+    padding: 10px 12px;
+  }
+  
+  .legend-content {
+    padding: 12px;
+  }
+  
+  .legend-statistics__grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  
+  .legend-tab {
+    padding: 8px 10px;
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 480px) {
+  .graph-legend {
+    min-width: auto;
+  }
+  
+  .legend-item {
+    padding: 6px 8px;
+    gap: 8px;
+  }
+  
+  .legend-item__color--circle {
+    width: 16px;
+    height: 16px;
+  }
+  
+  .legend-item__color--line {
+    width: 20px;
+    height: 2px;
+  }
+  
+  .legend-item__name {
+    font-size: 12px;
+  }
+  
+  .legend-item__count {
+    font-size: 10px;
+    padding: 1px 4px;
+  }
+  
+  .legend-category__header {
+    margin-bottom: 8px;
+  }
+  
+  .legend-category__items {
+    gap: 6px;
+  }
+}
+
+/* Mode sombre */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --legend-bg: rgba(31, 41, 55, 0.96);
+    --legend-border: rgba(75, 85, 99, 0.8);
+    --legend-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  }
+  
+  .legend-header {
+    background: rgba(17, 24, 39, 0.8);
+    border-color: rgba(75, 85, 99, 0.6);
+  }
+  
+  .legend-tabs {
+    background: rgba(55, 65, 81, 0.5);
+    border-color: rgba(75, 85, 99, 0.6);
+  }
+  
+  .legend-footer {
+    background: rgba(17, 24, 39, 0.8);
+    border-color: rgba(75, 85, 99, 0.6);
+  }
+  
+  .legend-header__text,
+  .legend-category__name,
+  .legend-statistics__title,
+  .legend-color-coding__title,
+  .legend-size-coding__title {
+    color: #f9fafb;
+  }
+  
+  .legend-collapsed__title,
+  .legend-item__name,
+  .legend-coding-item__label {
+    color: #d1d5db;
+  }
+  
+  .legend-collapsed__stats,
+  .legend-category__count,
+  .legend-item__count,
+  .legend-stat__label,
+  .legend-footer__help {
+    color: #9ca3af;
+  }
+  
+  .legend-tab {
+    color: #9ca3af;
+  }
+  
+  .legend-tab:hover {
+    color: #d1d5db;
+    background: rgba(75, 85, 99, 0.5);
+  }
+  
+  .legend-tab--active {
+    color: #60a5fa;
+    background: rgba(75, 85, 99, 0.8);
+  }
+  
+  .legend-item:hover {
+    background: rgba(55, 65, 81, 0.8);
+    border-color: rgba(75, 85, 99, 0.6);
+  }
+  
+  .legend-item:active {
+    background: rgba(75, 85, 99, 0.8);
+  }
+  
+  .legend-stat {
+    background: rgba(55, 65, 81, 0.5);
+    border-color: rgba(75, 85, 99, 0.5);
+  }
+  
+  .legend-item__count {
+    background: rgba(75, 85, 99, 0.8);
+  }
+  
+  .legend-content-wrapper::-webkit-scrollbar-track {
+    background: rgba(55, 65, 81, 0.5);
+  }
+  
+  .legend-content-wrapper::-webkit-scrollbar-thumb {
+    background: rgba(156, 163, 175, 0.6);
+  }
+  
+  .legend-content-wrapper::-webkit-scrollbar-thumb:hover {
+    background: rgba(156, 163, 175, 0.8);
+  }
+}
+
+/* Animations */
+.graph-legend {
+  animation: slideIn 0.3s ease;
+}
+
+.graph-legend--top-left,
+.graph-legend--bottom-left {
+  animation: slideInLeft 0.3s ease;
+}
+
+.graph-legend--top-right,
+.graph-legend--bottom-right {
+  animation: slideInRight 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Accessibilité */
+.legend-tab:focus,
+.legend-item:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+.legend-tab:focus:not(:focus-visible),
+.legend-item:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Réduction des mouvements */
+@media (prefers-reduced-motion: reduce) {
+  .graph-legend,
+  .legend-item,
+  .legend-tab {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* États de focus améliorés */
+.legend-item:focus-within {
+  outline: 2px solid #3b82f6;
+  outline-offset: 1px;
+  border-radius: 6px;
+}
+
+/* Amélioration des contrastes */
+@media (prefers-contrast: high) {
+  .graph-legend {
+    border-width: 2px;
+  }
+  
+  .legend-item,
+  .legend-stat {
+    border-width: 2px;
+  }
+  
+  .legend-item__color {
+    border-width: 2px;
+  }
+}

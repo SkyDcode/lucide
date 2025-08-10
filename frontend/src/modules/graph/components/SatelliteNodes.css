@@ -1,0 +1,547 @@
+/* frontend/src/modules/graph/components/SatelliteNodes.css */
+
+/* Variables CSS pour les nœuds satellites */
+:root {
+  --satellite-connection-color: #6b7280;
+  --satellite-connection-opacity: 0.6;
+  --satellite-node-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --satellite-label-bg: rgba(255, 255, 255, 0.95);
+  --satellite-label-border: rgba(229, 231, 235, 0.8);
+  --satellite-badge-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  --satellite-animation-duration: 300ms;
+  --satellite-hover-scale: 1.2;
+}
+
+/* Conteneur principal des satellites */
+.satellite-nodes {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 50;
+}
+
+/* Overlay SVG pour les satellites */
+.satellite-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 1000;
+}
+
+/* Groupe des satellites dans le SVG */
+.satellites-group {
+  pointer-events: auto;
+}
+
+/* Lignes de connexion vers les satellites */
+.satellite-connection {
+  stroke: var(--satellite-connection-color);
+  stroke-width: 1;
+  stroke-dasharray: 3, 3;
+  opacity: var(--satellite-connection-opacity);
+  fill: none;
+  pointer-events: none;
+  transition: all var(--satellite-animation-duration) ease;
+}
+
+.satellite-connection:hover {
+  stroke-width: 2;
+  opacity: 1;
+}
+
+/* Nœuds satellites */
+.satellite-node {
+  cursor: pointer;
+  transition: all var(--satellite-animation-duration) ease;
+  filter: drop-shadow(var(--satellite-node-shadow));
+}
+
+.satellite-node:hover {
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
+}
+
+.satellite-node circle:not(.connection-badge) {
+  transition: all 150ms ease;
+  stroke: #ffffff;
+  stroke-width: 2;
+}
+
+.satellite-node:hover circle:not(.connection-badge) {
+  stroke-width: 3;
+  transform-origin: center;
+}
+
+/* Icônes des satellites */
+.satellite-icon {
+  font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;
+  font-size: 12px;
+  fill: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  pointer-events: none;
+  user-select: none;
+  transition: all var(--satellite-animation-duration) ease;
+}
+
+/* Labels des satellites */
+.satellite-label {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  fill: #374151;
+  text-anchor: middle;
+  pointer-events: none;
+  user-select: none;
+  transition: all var(--satellite-animation-duration) ease;
+}
+
+/* Badge de connexion (direction) */
+.connection-badge {
+  fill: #3b82f6;
+  stroke: #ffffff;
+  stroke-width: 1;
+  filter: drop-shadow(var(--satellite-badge-shadow));
+  transition: all var(--satellite-animation-duration) ease;
+}
+
+.connection-badge.outgoing {
+  fill: #3b82f6; /* Bleu pour sortant */
+}
+
+.connection-badge.incoming {
+  fill: #10b981; /* Vert pour entrant */
+}
+
+.connection-icon {
+  font-size: 8px;
+  fill: #ffffff;
+  font-weight: bold;
+  pointer-events: none;
+  user-select: none;
+  transition: all var(--satellite-animation-duration) ease;
+}
+
+/* Informations contextuelles */
+.satellite-context-info {
+  position: absolute;
+  background: var(--satellite-label-bg);
+  border: 1px solid var(--satellite-label-border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #374151;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  z-index: 1001;
+  pointer-events: none;
+  white-space: nowrap;
+  transform: translate(-50%, 0);
+}
+
+.satellite-context-info::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: var(--satellite-label-bg);
+}
+
+/* Bouton de fermeture */
+.satellite-close-button {
+  position: absolute;
+  z-index: 1001;
+  pointer-events: auto;
+  background: rgba(255, 255, 255, 0.95) !important;
+  border: 1px solid rgba(229, 231, 235, 0.8) !important;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-radius: 6px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  color: #6b7280 !important;
+  padding: 4px 8px !important;
+  min-width: auto !important;
+  height: auto !important;
+  transition: all 150ms ease !important;
+}
+
+.satellite-close-button:hover {
+  background: rgba(248, 250, 252, 0.98) !important;
+  color: #374151 !important;
+  transform: scale(1.05);
+}
+
+.satellite-close-button:active {
+  transform: scale(0.98);
+}
+
+/* Animations d'entrée */
+@keyframes satelliteAppear {
+  0% {
+    opacity: 0;
+    transform: scale(0.3) translate(0, 0);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes satelliteConnectionGrow {
+  0% {
+    stroke-dasharray: 0, 1000;
+  }
+  100% {
+    stroke-dasharray: 3, 3;
+  }
+}
+
+@keyframes satellitePulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+/* Classes d'animation */
+.satellite-node.entering circle {
+  animation: satelliteAppear var(--satellite-animation-duration) ease-out;
+}
+
+.satellite-connection.entering {
+  animation: satelliteConnectionGrow var(--satellite-animation-duration) ease-out;
+}
+
+.satellite-node.selected circle {
+  animation: satellitePulse 1s ease-in-out infinite;
+  stroke: #fbbf24;
+  stroke-width: 3;
+}
+
+/* États de survol avancés */
+.satellite-node:hover .satellite-icon {
+  font-size: 14px;
+}
+
+.satellite-node:hover .satellite-label {
+  font-weight: 600;
+  fill: #111827;
+}
+
+.satellite-node:hover .connection-badge {
+  transform: scale(1.1);
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+/* Effets de focus pour l'accessibilité */
+.satellite-node:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+  border-radius: 50%;
+}
+
+.satellite-node:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Groupement par type */
+.satellite-node.type-person circle {
+  stroke: #ef4444;
+}
+
+.satellite-node.type-place circle {
+  stroke: #10b981;
+}
+
+.satellite-node.type-organization circle {
+  stroke: #3b82f6;
+}
+
+.satellite-node.type-vehicle circle {
+  stroke: #f59e0b;
+}
+
+.satellite-node.type-account circle {
+  stroke: #8b5cf6;
+}
+
+.satellite-node.type-event circle {
+  stroke: #ec4899;
+}
+
+.satellite-node.type-document circle {
+  stroke: #6b7280;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .satellite-icon {
+    font-size: 10px;
+  }
+  
+  .satellite-label {
+    font-size: 9px;
+  }
+  
+  .connection-icon {
+    font-size: 7px;
+  }
+  
+  .satellite-context-info {
+    font-size: 11px;
+    padding: 6px 10px;
+  }
+  
+  .satellite-close-button {
+    font-size: 11px !important;
+    padding: 3px 6px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .satellite-icon {
+    font-size: 9px;
+  }
+  
+  .satellite-label {
+    font-size: 8px;
+  }
+  
+  .connection-badge {
+    r: 5;
+  }
+  
+  .connection-icon {
+    font-size: 6px;
+  }
+  
+  .satellite-context-info {
+    font-size: 10px;
+    padding: 5px 8px;
+  }
+}
+
+/* Mode sombre */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --satellite-connection-color: #9ca3af;
+    --satellite-label-bg: rgba(31, 41, 55, 0.95);
+    --satellite-label-border: rgba(75, 85, 99, 0.8);
+  }
+  
+  .satellite-label {
+    fill: #d1d5db;
+  }
+  
+  .satellite-node:hover .satellite-label {
+    fill: #f9fafb;
+  }
+  
+  .satellite-context-info {
+    color: #d1d5db;
+  }
+  
+  .satellite-context-info::after {
+    border-top-color: rgba(31, 41, 55, 0.95);
+  }
+  
+  .satellite-close-button {
+    background: rgba(31, 41, 55, 0.95) !important;
+    border-color: rgba(75, 85, 99, 0.8) !important;
+    color: #9ca3af !important;
+  }
+  
+  .satellite-close-button:hover {
+    background: rgba(55, 65, 81, 0.98) !important;
+    color: #d1d5db !important;
+  }
+}
+
+/* Effets de performance */
+@media (prefers-reduced-motion: reduce) {
+  .satellite-node,
+  .satellite-connection,
+  .satellite-icon,
+  .satellite-label,
+  .connection-badge,
+  .connection-icon {
+    animation: none !important;
+    transition: none !important;
+  }
+  
+  .satellite-node:hover circle {
+    transform: none !important;
+  }
+}
+
+/* Optimisations pour les grands nombres de satellites */
+.satellites-group.many-satellites .satellite-label {
+  display: none;
+}
+
+.satellites-group.many-satellites .connection-badge {
+  r: 4;
+}
+
+.satellites-group.many-satellites .satellite-icon {
+  font-size: 10px;
+}
+
+/* États d'interaction spéciaux */
+.satellite-node.dragging {
+  opacity: 0.8;
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.2));
+}
+
+.satellite-node.related {
+  animation: satellitePulse 2s ease-in-out infinite;
+}
+
+.satellite-node.highlighted circle {
+  stroke: #fbbf24;
+  stroke-width: 4;
+  filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.4));
+}
+
+/* Tooltip pour les satellites */
+.satellite-tooltip {
+  position: absolute;
+  background: rgba(17, 24, 39, 0.95);
+  color: #f9fafb;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  pointer-events: none;
+  z-index: 1002;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  max-width: 200px;
+  word-wrap: break-word;
+}
+
+.satellite-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 4px solid transparent;
+  border-top-color: rgba(17, 24, 39, 0.95);
+}
+
+.satellite-tooltip.above::after {
+  top: auto;
+  bottom: 100%;
+  border-top-color: transparent;
+  border-bottom-color: rgba(17, 24, 39, 0.95);
+}
+
+/* Animation de disparition */
+@keyframes satelliteDisappear {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+}
+
+.satellite-node.exiting,
+.satellite-connection.exiting {
+  animation: satelliteDisappear calc(var(--satellite-animation-duration) / 2) ease-in;
+}
+
+/* Support pour les gestes tactiles */
+@media (hover: none) and (pointer: coarse) {
+  .satellite-node {
+    /* Augmenter la zone de toucher sur mobile */
+    r: 10;
+  }
+  
+  .satellite-close-button {
+    padding: 8px 12px !important;
+    font-size: 14px !important;
+  }
+  
+  .satellite-context-info {
+    font-size: 14px;
+    padding: 10px 14px;
+  }
+}
+
+/* Indicateurs visuels pour les différents états */
+.satellite-node.loading circle {
+  stroke-dasharray: 15, 5;
+  animation: rotate 1s linear infinite;
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.satellite-node.error circle {
+  stroke: #dc2626;
+  stroke-width: 3;
+  fill: #fef2f2;
+}
+
+.satellite-node.success circle {
+  stroke: #059669;
+  stroke-width: 3;
+  animation: successPulse 0.6s ease-out;
+}
+
+@keyframes successPulse {
+  0% {
+    transform: scale(1);
+    stroke-width: 3;
+  }
+  50% {
+    transform: scale(1.2);
+    stroke-width: 4;
+  }
+  100% {
+    transform: scale(1);
+    stroke-width: 3;
+  }
+}
+
+/* Connexions spécialisées */
+.satellite-connection.strong {
+  stroke-width: 2;
+  stroke: #059669;
+  opacity: 0.8;
+}
+
+.satellite-connection.weak {
+  stroke-width: 1;
+  stroke-dasharray: 2, 4;
+  opacity: 0.4;
+}
+
+.satellite-connection.suspicious {
+  stroke: #dc2626;
+  stroke-width: 2;
+  stroke-dasharray: 5, 2, 1, 2;
+  opacity: 0.7;
+}
