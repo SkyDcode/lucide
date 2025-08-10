@@ -3,6 +3,7 @@ const express = require('express');
 const EntityController = require('../controllers/EntityController');
 const EntityTypeController = require('../controllers/EntityTypeController');
 const EntityMergeController = require('../controllers/EntityMergeController');
+const EntitySearchController = require('../controllers/EntitySearchController');
 
 const router = express.Router();
 
@@ -187,13 +188,15 @@ router.post('/types/:typeKey/format',
 // ROUTES GÉNÉRALES DES ENTITÉS
 // =============================================
 
+
+// Remplacer la route de recherche existante par celle du nouveau contrôleur
 /**
- * Rechercher des entités globalement
- * GET /api/entities/search
+ * Rechercher des entités (VERSION AMÉLIORÉE)
+ * GET /api/entities/search?q=...&folderId=...&type=...
  */
 router.get('/search', 
-  EntityController.logAction('search_entities'),
-  EntityController.searchEntities
+  EntityController.logAction('search_entities_advanced'),
+  EntitySearchController.search
 );
 
 /**
@@ -231,6 +234,83 @@ router.post('/batch',
   EntityController.logAction('get_entities_batch'),
   EntityController.getEntitiesBatch
 );
+
+/**
+ * NOUVELLES ROUTES DE RECHERCHE AVANCÉE
+ */
+
+/**
+ * Suggestions d'autocomplétion
+ * GET /api/entities/search/suggestions?q=terme&folderId=1&type=person&limit=10
+ */
+router.get('/search/suggestions', 
+  EntityController.logAction('get_search_suggestions'),
+  EntitySearchController.suggestions
+);
+
+/**
+ * Recherche rapide simplifiée
+ * GET /api/entities/search/quick?q=terme&folderId=1&limit=10
+ */
+router.get('/search/quick', 
+  EntityController.logAction('quick_search'),
+  EntitySearchController.quickSearch
+);
+
+/**
+ * Recherche avancée avec filtres complexes
+ * POST /api/entities/search/advanced
+ */
+router.post('/search/advanced', 
+  EntityController.logAction('advanced_search'),
+  EntitySearchController.advancedSearch
+);
+
+/**
+ * Validation de terme de recherche
+ * POST /api/entities/search/validate
+ */
+router.post('/search/validate', 
+  EntityController.logAction('validate_search_query'),
+  EntitySearchController.validateSearchQuery
+);
+
+/**
+ * Statistiques de recherche
+ * GET /api/entities/search/stats?period=week
+ */
+router.get('/search/stats', 
+  EntityController.logAction('get_search_stats'),
+  EntitySearchController.getSearchStats
+);
+
+/**
+ * Historique de recherche
+ * GET /api/entities/search/history?limit=20
+ */
+router.get('/search/history', 
+  EntityController.logAction('get_search_history'),
+  EntitySearchController.getSearchHistory
+);
+
+/**
+ * Exporter les résultats de recherche
+ * GET /api/entities/search/export?q=terme&format=json
+ */
+router.get('/search/export', 
+  EntityController.logAction('export_search_results'),
+  EntitySearchController.exportSearchResults
+);
+
+/**
+ * Rechercher des entités similaires
+ * GET /api/entities/:id/similar?limit=20&minSimilarity=0.3
+ */
+router.get('/:id/similar', 
+  EntityController.logAction('find_similar_entities'),
+  EntitySearchController.findSimilar
+);
+
 
 // =============================================
 // ROUTES PAR DOSSIER
@@ -388,24 +468,13 @@ router.post('/:id/duplicate',
   EntityController.duplicateEntity
 );
 
-// backend/core/entities/routes/entityRoutes.js
-// ... imports existants
-const EntitySearchController = require('../controllers/EntitySearchController');
-
-// ... routes existantes
-// Recherche d'entités
-// GET /api/entities/search?q=...&folderId=...&type=...
-router.get('/search', EntitySearchController.search);
-
-
 // Fusion d'entités
 // POST /api/entities/merge  { targetId, sourceIds: number[], prefer?: 'target'|'source' }
-router.post('/merge', EntityMergeController.postMerge);
+//router.post('/merge', EntityMergeController.postMerge);
 
 // Détection de doublons
 // GET /api/entities/duplicates?folderId=123&minScore=60
-router.get('/duplicates', EntityMergeController.getDuplicates);
-
+// router.get('/duplicates', EntityMergeController.getDuplicates);
 
 
 // =============================================
