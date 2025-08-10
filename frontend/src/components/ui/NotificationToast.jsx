@@ -339,5 +339,122 @@ export function useNotificationErrorBoundary() {
   const { error } = useNotificationStore();
 
   return {
-    onError: (error, errorInfo) => {
-      console
+    onError: (errorObj, errorInfo) => {
+      console.error('Erreur React capturée:', errorObj, errorInfo);
+      
+      // Créer un message d'erreur informatif
+      const errorMessage = errorObj?.message || 'Une erreur inattendue s\'est produite';
+      const componentStack = errorInfo?.componentStack || '';
+      
+      // Notification d'erreur avec détails pour le développement
+      error(errorMessage, {
+        title: 'Erreur de l\'application',
+        persistent: true,
+        action: {
+          label: 'Voir les détails',
+          onClick: () => {
+            console.group('Détails de l\'erreur');
+            console.error('Erreur:', errorObj);
+            console.error('Stack des composants:', componentStack);
+            console.groupEnd();
+            
+            // Optionnel: Ouvrir les outils de développement
+            if (process.env.NODE_ENV === 'development') {
+              console.warn('Ouvrez les outils de développement pour plus de détails');
+            }
+          }
+        },
+        secondaryAction: {
+          label: 'Recharger la page',
+          onClick: () => {
+            window.location.reload();
+          }
+        }
+      });
+    },
+    
+    // Méthode pour capturer les erreurs de promesses non gérées
+    capturePromiseRejection: (reason, promise) => {
+      console.error('Promesse rejetée non gérée:', reason, promise);
+      
+      error('Erreur de connexion ou de traitement', {
+        title: 'Erreur réseau',
+        action: {
+          label: 'Réessayer',
+          onClick: () => {
+            // L'appelant peut définir une logique de retry
+            console.log('Retry demandé pour:', reason);
+          }
+        }
+      });
+    }
+  };
+}
+
+/**
+ * Hook pour simplifier l'utilisation des notifications dans les composants
+ */
+export function useToast() {
+  const { success, error, warning, info, loading, removeNotification } = useNotificationStore();
+
+  const toast = {
+    success: (message, options) => success(message, options),
+    error: (message, options) => error(message, options),
+    warning: (message, options) => warning(message, options),
+    info: (message, options) => info(message, options),
+    loading: (message, options) => loading(message, options),
+    dismiss: (id) => removeNotification(id)
+  };
+
+  return toast;
+}
+
+/**
+ * Composant Error Boundary avec notifications automatiques
+ */
+export class NotificationErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, errorId: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    const { onError } = this.props;
+    
+    if (onError) {
+      onError(error, errorInfo);
+    } else {
+      // Fallback si pas de handler fourni
+      console.error('Error Boundary a capturé une erreur:', error, errorInfo);
+    }
+  }
+
+  render() {
+    if (this.state.hasError) {
+      // Interface de fallback personnalisable
+      return this.props.fallback || (
+        <div className="flex items-center justify-center min-h-64 p-8">
+          <div className="text-center">
+            <div className="text-6xl mb-4">⚠️</div>
+            <h2 className="text-xl font-semibold mb-2">Une erreur s'est produite</h2>
+            <p className="text-gray-600 mb-4">
+              L'application a rencontré une erreur inattendue.
+            </p>
+            <Button
+              onClick={() => window.location.reload()}
+              variant="primary"
+            >
+              Recharger la page
+            </Button>
+          </div>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
