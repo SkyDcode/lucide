@@ -1,0 +1,339 @@
+/* frontend/src/modules/graph/components/NetworkGraph.css */
+
+/* Animation de rotation pour le spinner */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Styles de base du NetworkGraph */
+.network-graph {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: #1f2937;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #374151;
+}
+
+/* États de chargement, erreur et vide */
+.network-graph-loading,
+.network-graph-error,
+.network-graph-empty {
+  width: 100%;
+  height: 100%;
+  background: #1f2937;
+  border-radius: 12px;
+  border: 1px solid #374151;
+}
+
+/* Statistiques du graphe */
+.network-graph__stats {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 10;
+}
+
+.stats-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 12px;
+  color: #374151;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  min-width: 120px;
+}
+
+.stats-title {
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #1f2937;
+  font-size: 13px;
+}
+
+.stats-item {
+  margin-bottom: 2px;
+  line-height: 1.4;
+}
+
+.stats-item:last-child {
+  margin-bottom: 0;
+}
+
+.stats-warning {
+  color: #f59e0b;
+  font-weight: 500;
+}
+
+/* Indicateur de simulation */
+.network-graph__simulation-indicator {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 10;
+}
+
+.indicator-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 12px;
+  color: #374151;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.status-dot.active {
+  background-color: #10b981;
+  box-shadow: 0 0 4px rgba(16, 185, 129, 0.4);
+}
+
+.status-dot.paused {
+  background-color: #f59e0b;
+  box-shadow: 0 0 4px rgba(245, 158, 11, 0.4);
+}
+
+/* Informations sur la sélection */
+.network-graph__selection-info {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  z-index: 10;
+  max-width: 280px;
+}
+
+.selection-card {
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(12px);
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 12px;
+  color: #374151;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.selection-title {
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: #1f2937;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.selection-type,
+.selection-connections {
+  opacity: 0.7;
+  margin-bottom: 4px;
+  line-height: 1.3;
+}
+
+.selection-type:last-child,
+.selection-connections:last-child {
+  margin-bottom: 8px;
+}
+
+.satellite-toggle {
+  margin-top: 8px;
+  padding: 4px 8px;
+  border: none;
+  border-radius: 4px;
+  font-size: 11px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  background: #3b82f6;
+  color: white;
+}
+
+.satellite-toggle.active {
+  background: #ef4444;
+}
+
+.satellite-toggle:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.satellite-toggle:active {
+  transform: translateY(0);
+}
+
+/* Effets de survol et d'interaction */
+.network-graph button:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.network-graph button:active {
+  transform: translateY(0);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .network-graph__stats,
+  .network-graph__simulation-indicator,
+  .network-graph__selection-info {
+    position: static;
+    margin: 8px;
+  }
+  
+  .stats-card,
+  .indicator-card,
+  .selection-card {
+    font-size: 11px !important;
+    padding: 8px !important;
+  }
+  
+  .selection-card {
+    max-width: none;
+  }
+  
+  .network-graph__stats {
+    order: 1;
+  }
+  
+  .network-graph__simulation-indicator {
+    order: 2;
+  }
+  
+  .network-graph__selection-info {
+    order: 3;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-card,
+  .indicator-card,
+  .selection-card {
+    font-size: 10px !important;
+    padding: 6px !important;
+  }
+  
+  .stats-title,
+  .selection-title {
+    font-size: 11px !important;
+  }
+  
+  .satellite-toggle {
+    padding: 3px 6px;
+    font-size: 10px;
+  }
+}
+
+/* États spéciaux pour les modes sombre et clair */
+@media (prefers-color-scheme: dark) {
+  .network-graph {
+    background: #111827;
+    border-color: #4b5563;
+  }
+  
+  .network-graph-loading,
+  .network-graph-error,
+  .network-graph-empty {
+    background: #111827;
+    border-color: #4b5563;
+  }
+  
+  .stats-card,
+  .indicator-card,
+  .selection-card {
+    background: rgba(31, 41, 55, 0.95);
+    color: #e5e7eb;
+    border-color: rgba(75, 85, 99, 0.3);
+  }
+  
+  .stats-title,
+  .selection-title {
+    color: #f9fafb;
+  }
+}
+
+/* Animations et transitions */
+.stats-card,
+.indicator-card,
+.selection-card {
+  transition: all 0.3s ease;
+}
+
+.stats-card:hover,
+.indicator-card:hover,
+.selection-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Accessibilité */
+.network-graph button:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+.network-graph button:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Styles pour les états d'erreur et de chargement */
+.network-graph-loading .spin,
+.network-graph button .spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Performance - réduire les animations sur les appareils lents */
+@media (prefers-reduced-motion: reduce) {
+  .network-graph * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .stats-card:hover,
+  .indicator-card:hover,
+  .selection-card:hover {
+    transform: none;
+  }
+  
+  .satellite-toggle:hover,
+  .network-graph button:hover {
+    transform: none;
+  }
+}
+
+/* Support pour les écrans haute densité */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .stats-card,
+  .indicator-card,
+  .selection-card {
+    backdrop-filter: blur(8px);
+  }
+}
+
+/* Styles pour l'impression */
+@media print {
+  .network-graph__stats,
+  .network-graph__simulation-indicator,
+  .network-graph__selection-info {
+    display: none;
+  }
+  
+  .network-graph {
+    border: 1px solid #000;
+    background: white;
+  }
+}
