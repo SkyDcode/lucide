@@ -1,126 +1,405 @@
-<!doctype html>
-<html>
+{{!-- backend/core/export/templates/entity-report.hbs - Template rapport d'entité LUCIDE --}}
+<!DOCTYPE html>
+<html lang="fr">
 <head>
-  <meta charset="utf-8" />
-  <title>Fiche entité — {{entity.name}} (#{{entity.id}})</title>
-  <style>
-    body { font-family: Arial, sans-serif; font-size: 12px; color: #111; }
-    h1 { font-size: 20px; margin: 0 0 4px; }
-    h2 { font-size: 14px; margin: 18px 0 6px; border-bottom: 1px solid #ddd; padding-bottom: 4px; }
-    .muted { color: #666; }
-    .meta { margin-bottom: 10px; }
-    table { width: 100%; border-collapse: collapse; margin: 6px 0; }
-    th, td { border: 1px solid #e5e5e5; padding: 6px; text-align: left; vertical-align: top; }
-    th { background: #fafafa; }
-    .k { width: 28%; white-space: nowrap; }
-    .badge { display: inline-block; padding: 2px 6px; border: 1px solid #999; border-radius: 3px; font-size: 10px; }
-    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .small { font-size: 10px; }
-    .mb8 { margin-bottom: 8px; }
-    .mb4 { margin-bottom: 4px; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fiche d'identité - {{entity.name}}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8fafc;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            background: white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, {{getEntityColor entity.type}}, {{getEntityColor entity.type}}dd);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header .entity-type {
+            font-size: 1.2em;
+            opacity: 0.9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .header .entity-icon {
+            font-size: 1.5em;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        
+        .section-title {
+            font-size: 1.4em;
+            color: {{getEntityColor entity.type}};
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid {{getEntityColor entity.type}}22;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        
+        .info-item {
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 6px;
+            border-left: 4px solid {{getEntityColor entity.type}};
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .info-value {
+            color: #1f2937;
+            word-wrap: break-word;
+        }
+        
+        .info-value.empty {
+            color: #9ca3af;
+            font-style: italic;
+        }
+        
+        .list-items {
+            list-style: none;
+        }
+        
+        .list-items li {
+            padding: 8px 0;
+            border-bottom: 1px solid #f3f4f6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .list-items li:last-child {
+            border-bottom: none;
+        }
+        
+        .relation-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            margin-bottom: 8px;
+        }
+        
+        .relation-type {
+            background: {{getRelationColor relationships.0.type}}22;
+            color: {{getRelationColor relationships.0.type}};
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background: {{getEntityColor entity.type}}22;
+            color: {{getEntityColor entity.type}};
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .stat-card {
+            text-align: center;
+            padding: 20px;
+            background: {{getEntityColor entity.type}}11;
+            border-radius: 8px;
+            border: 1px solid {{getEntityColor entity.type}}33;
+        }
+        
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: {{getEntityColor entity.type}};
+        }
+        
+        .stat-label {
+            color: #6b7280;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+        
+        .footer {
+            background: #f8fafc;
+            padding: 20px 30px;
+            border-top: 1px solid #e5e7eb;
+            color: #6b7280;
+            font-size: 0.9em;
+        }
+        
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .no-data {
+            text-align: center;
+            color: #9ca3af;
+            font-style: italic;
+            padding: 20px;
+            background: #f9fafb;
+            border-radius: 6px;
+        }
+        
+        @media print {
+            body { background: white; }
+            .container { box-shadow: none; margin: 0; }
+            .footer { page-break-inside: avoid; }
+        }
+    </style>
 </head>
 <body>
-  <h1>Fiche entité <span class="muted">#{{entity.id}}</span></h1>
-  <div class="meta">
-    <span class="badge">{{upper entity.type}}</span>
-    {{#if folder}}
-      — Dossier: <strong>{{folder.name}}</strong> (#{{folder.id}})
-    {{/if}}
-    <div class="small muted">Créé: {{dateISO entity.created_at}} — MAJ: {{dateISO entity.updated_at}}</div>
-  </div>
+    <div class="container">
+        <!-- En-tête -->
+        <div class="header">
+            <h1>{{entity.name}}</h1>
+            <div class="entity-type">
+                <span class="entity-icon">{{getEntityIcon entity.type}}</span>
+                <span>{{capitalize entity.type}} - ID: {{entity.id}}</span>
+            </div>
+        </div>
 
-  <h2>Identité</h2>
-  <table>
-    <tr><th class="k">Nom</th><td>{{entity.name}}</td></tr>
-    <tr><th class="k">Type</th><td>{{entity.type}}</td></tr>
-    <tr><th class="k">ID</th><td>{{entity.id}}</td></tr>
-    <tr><th class="k">Dossier</th><td>{{entity.folder_id}}</td></tr>
-  </table>
+        <!-- Contenu principal -->
+        <div class="content">
+            <!-- Informations générales -->
+            <div class="section">
+                <h2 class="section-title">
+                    📋 Informations générales
+                </h2>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Type d'entité</div>
+                        <div class="info-value">
+                            <span class="badge">{{getEntityIcon entity.type}} {{capitalize entity.type}}</span>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Dossier</div>
+                        <div class="info-value">{{#if entity.folder_name}}{{entity.folder_name}}{{else}}<span class="empty">Non défini</span>{{/if}}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Date de création</div>
+                        <div class="info-value">{{formatDate entity.created_at 'DD/MM/YYYY HH:mm'}}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Dernière modification</div>
+                        <div class="info-value">{{formatDate entity.updated_at 'DD/MM/YYYY HH:mm'}}</div>
+                    </div>
+                </div>
+            </div>
 
-  <h2>Données (attributs)</h2>
-  <table>
-    <thead><tr><th class="k">Clé</th><th>Valeur</th></tr></thead>
-    <tbody>
-      {{#if attributes.length}}
-        {{#each attributes}}
-          <tr>
-            <td class="k">{{this.key}}</td>
-            <td><pre style="margin:0;white-space:pre-wrap;">{{this.value}}</pre></td>
-          </tr>
-        {{/each}}
-      {{else}}
-        <tr><td colspan="2" class="muted">Aucun attribut</td></tr>
-      {{/if}}
-    </tbody>
-  </table>
+            <!-- Attributs spécifiques -->
+            {{#if entity.attributes}}
+            {{#unless (isEmpty entity.attributes)}}
+            <div class="section">
+                <h2 class="section-title">
+                    🏷️ Attributs spécifiques
+                </h2>
+                <div class="info-grid">
+                    {{#each entity.attributes}}
+                    <div class="info-item">
+                        <div class="info-label">{{@key}}</div>
+                        <div class="info-value">{{#if this}}{{this}}{{else}}<span class="empty">Non renseigné</span>{{/if}}</div>
+                    </div>
+                    {{/each}}
+                </div>
+            </div>
+            {{/unless}}
+            {{/if}}
 
-  <div class="grid2">
-    <div>
-      <h2>Relations sortantes</h2>
-      <table>
-        <thead><tr><th>Type</th><th>→ Entité</th><th class="k">Horodatage</th></tr></thead>
-        <tbody>
-        {{#if outRels.length}}
-          {{#each outRels}}
-            <tr>
-              <td><span class="badge">{{this.type}}</span></td>
-              <td>[{{this.to_type}}] {{this.to_name}} (#{{this.to_entity}})</td>
-              <td class="small">{{dateISO this.created_at}}</td>
-            </tr>
-          {{/each}}
-        {{else}}
-          <tr><td colspan="3" class="muted">Aucune</td></tr>
-        {{/if}}
-        </tbody>
-      </table>
+            <!-- Relations -->
+            {{#if relationships}}
+            {{#if (count relationships)}}
+            <div class="section">
+                <h2 class="section-title">
+                    🔗 Relations ({{count relationships}})
+                </h2>
+                {{#each relationships}}
+                <div class="relation-item">
+                    <div class="relation-type">{{formatRelation this.type this.strength}}</div>
+                    <div style="flex: 1;">
+                        {{#if this.direction}}
+                            {{#ifEquals this.direction 'outgoing'}}
+                                <strong>{{../entity.name}}</strong> → <strong>{{this.connected_entity_info.name}}</strong>
+                            {{else}}
+                                <strong>{{this.connected_entity_info.name}}</strong> → <strong>{{../entity.name}}</strong>
+                            {{/ifEquals}}
+                        {{else}}
+                            <strong>{{this.from_entity_info.name}}</strong> ↔ <strong>{{this.to_entity_info.name}}</strong>
+                        {{/if}}
+                    </div>
+                    <div style="color: #6b7280; font-size: 0.9em;">
+                        {{formatDate this.created_at 'DD/MM/YYYY'}}
+                    </div>
+                </div>
+                {{#if this.description}}
+                <div style="margin-left: 20px; color: #6b7280; font-style: italic; margin-bottom: 10px;">
+                    "{{this.description}}"
+                </div>
+                {{/if}}
+                {{/each}}
+            </div>
+            {{else}}
+            <div class="section">
+                <h2 class="section-title">
+                    🔗 Relations
+                </h2>
+                <div class="no-data">
+                    Aucune relation enregistrée pour cette entité
+                </div>
+            </div>
+            {{/if}}
+            {{/if}}
+
+            <!-- Fichiers attachés -->
+            {{#if files}}
+            {{#if (count files)}}
+            <div class="section">
+                <h2 class="section-title">
+                    📎 Fichiers attachés ({{count files}})
+                </h2>
+                <ul class="list-items">
+                    {{#each files}}
+                    <li>
+                        <span>
+                            <strong>{{this.original_name}}</strong>
+                            {{#if this.mime_type}}<span style="color: #6b7280;"> ({{this.mime_type}})</span>{{/if}}
+                        </span>
+                        <span style="color: #6b7280; font-size: 0.9em;">
+                            {{formatDate this.created_at 'DD/MM/YYYY'}}
+                        </span>
+                    </li>
+                    {{/each}}
+                </ul>
+            </div>
+            {{else}}
+            <div class="section">
+                <h2 class="section-title">
+                    📎 Fichiers attachés
+                </h2>
+                <div class="no-data">
+                    Aucun fichier attaché à cette entité
+                </div>
+            </div>
+            {{/if}}
+            {{/if}}
+
+            <!-- Statistiques -->
+            <div class="section">
+                <h2 class="section-title">
+                    📊 Statistiques
+                </h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">{{#if entity.connection_count}}{{entity.connection_count}}{{else}}0{{/if}}</div>
+                        <div class="stat-label">Connexions</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">{{#if entity.file_count}}{{entity.file_count}}{{else}}0{{/if}}</div>
+                        <div class="stat-label">Fichiers</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">{{#if relationships}}{{count relationships}}{{else}}0{{/if}}</div>
+                        <div class="stat-label">Relations</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notes d'investigation -->
+            {{#if investigation_notes}}
+            <div class="section">
+                <h2 class="section-title">
+                    🕵️ Notes d'investigation
+                </h2>
+                <div style="background: #fffbeb; border: 1px solid #f59e0b; border-radius: 6px; padding: 15px;">
+                    <div style="white-space: pre-wrap;">{{investigation_notes}}</div>
+                </div>
+            </div>
+            {{/if}}
+        </div>
+
+        <!-- Pied de page -->
+        <div class="footer">
+            <div class="footer-grid">
+                <div>
+                    <strong>LUCIDE - Application OSINT</strong><br>
+                    Police Judiciaire<br>
+                    Rapport généré le {{formatDate _meta.generatedAt 'DD/MM/YYYY HH:mm'}}
+                </div>
+                <div style="text-align: right;">
+                    <strong>Classification:</strong> {{#if classification}}{{classification}}{{else}}Confidentiel{{/if}}<br>
+                    <strong>Version:</strong> {{_meta.version}}<br>
+                    <strong>ID Entité:</strong> {{entity.id}}
+                </div>
+            </div>
+        </div>
     </div>
-
-    <div>
-      <h2>Relations entrantes</h2>
-      <table>
-        <thead><tr><th>Type</th><th>Entité →</th><th class="k">Horodatage</th></tr></thead>
-        <tbody>
-        {{#if inRels.length}}
-          {{#each inRels}}
-            <tr>
-              <td><span class="badge">{{this.type}}</span></td>
-              <td>[{{this.from_type}}] {{this.from_name}} (#{{this.from_entity}})</td>
-              <td class="small">{{dateISO this.created_at}}</td>
-            </tr>
-          {{/each}}
-        {{else}}
-          <tr><td colspan="3" class="muted">Aucune</td></tr>
-        {{/if}}
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <h2>Pièces / Fichiers liés</h2>
-  <table>
-    <thead><tr><th>Fichier</th><th>Infos</th><th class="k">Hash</th></tr></thead>
-    <tbody>
-      {{#if files.length}}
-        {{#each files}}
-          <tr>
-            <td>
-              <div class="mb4"><strong>{{this.filename}}</strong></div>
-              <div class="small muted">Chemin local: {{this.path}}</div>
-              {{#if this.source_url}}<div class="small">Source: {{this.source_url}}</div>{{/if}}
-            </td>
-            <td>
-              <div class="small">MIME: {{this.mime_type}}</div>
-              <div class="small">Taille: {{this.size_h}}</div>
-              <div class="small">Capturé: {{dateISO this.captured_at}}</div>
-            </td>
-            <td class="small">{{this.sha256}}</td>
-          </tr>
-        {{/each}}
-      {{else}}
-        <tr><td colspan="3" class="muted">Aucun fichier lié</td></tr>
-      {{/if}}
-    </tbody>
-  </table>
 </body>
 </html>

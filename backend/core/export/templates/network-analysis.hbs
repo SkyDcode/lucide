@@ -1,0 +1,837 @@
+{{!-- backend/core/export/templates/network-analysis.hbs - Template analyse réseau LUCIDE --}}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analyse réseau - {{folder.name}}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8fafc;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            background: white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #6366f1, #4338ca);
+            color: white;
+            padding: 50px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 15px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header .subtitle {
+            font-size: 1.4em;
+            opacity: 0.9;
+            margin-bottom: 25px;
+        }
+        
+        .header-stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .header-stat {
+            text-align: center;
+        }
+        
+        .header-stat-number {
+            font-size: 2.2em;
+            font-weight: bold;
+            display: block;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+        
+        .header-stat-label {
+            font-size: 1em;
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-top: 5px;
+        }
+        
+        .content {
+            padding: 50px;
+        }
+        
+        .section {
+            margin-bottom: 50px;
+            padding-bottom: 40px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        
+        .section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        
+        .section-title {
+            font-size: 1.8em;
+            color: #1f2937;
+            margin-bottom: 25px;
+            padding-bottom: 12px;
+            border-bottom: 3px solid #6366f1;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .metric-card {
+            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #6366f1, #8b5cf6);
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .metric-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #6366f1;
+            margin-bottom: 10px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+        
+        .metric-label {
+            color: #64748b;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            font-size: 0.95em;
+        }
+        
+        .metric-description {
+            color: #94a3b8;
+            font-size: 0.85em;
+            margin-top: 8px;
+            font-style: italic;
+        }
+        
+        .analysis-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .analysis-card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .analysis-card h3 {
+            color: #374151;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .entity-ranking {
+            list-style: none;
+        }
+        
+        .entity-ranking li {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        
+        .entity-ranking li:last-child {
+            border-bottom: none;
+        }
+        
+        .entity-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .entity-rank {
+            background: #6366f1;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+        
+        .entity-name {
+            font-weight: 600;
+        }
+        
+        .entity-type {
+            color: #6b7280;
+            font-size: 0.85em;
+            background: #f3f4f6;
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+        
+        .entity-score {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+        
+        .relationship-matrix {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 25px;
+            overflow-x: auto;
+        }
+        
+        .matrix-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 600px;
+        }
+        
+        .matrix-table th,
+        .matrix-table td {
+            padding: 12px;
+            text-align: center;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .matrix-table th {
+            background: #6366f1;
+            color: white;
+            font-weight: 600;
+        }
+        
+        .matrix-table td {
+            background: white;
+        }
+        
+        .matrix-cell {
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+        
+        .matrix-cell.high {
+            background: #dc2626;
+            color: white;
+        }
+        
+        .matrix-cell.medium {
+            background: #f59e0b;
+            color: white;
+        }
+        
+        .matrix-cell.low {
+            background: #10b981;
+            color: white;
+        }
+        
+        .matrix-cell.none {
+            background: #f3f4f6;
+            color: #9ca3af;
+        }
+        
+        .clusters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+        }
+        
+        .cluster-card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 25px;
+            border-left: 5px solid var(--cluster-color, #6366f1);
+        }
+        
+        .cluster-header {
+            display: flex;
+            align-items: center;
+            justify-content: between;
+            margin-bottom: 20px;
+        }
+        
+        .cluster-name {
+            font-weight: 600;
+            font-size: 1.2em;
+            color: #374151;
+        }
+        
+        .cluster-size {
+            background: var(--cluster-color, #6366f1);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-left: auto;
+        }
+        
+        .cluster-entities {
+            list-style: none;
+        }
+        
+        .cluster-entities li {
+            padding: 8px 0;
+            border-bottom: 1px solid #f3f4f6;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .cluster-entities li:last-child {
+            border-bottom: none;
+        }
+        
+        .centrality-chart {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 25px;
+        }
+        
+        .chart-bar {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .chart-label {
+            width: 150px;
+            font-size: 0.9em;
+            color: #374151;
+            font-weight: 500;
+        }
+        
+        .chart-bar-fill {
+            height: 20px;
+            background: linear-gradient(90deg, #6366f1, #8b5cf6);
+            border-radius: 10px;
+            position: relative;
+            margin-right: 10px;
+            min-width: 20px;
+        }
+        
+        .chart-value {
+            color: #6b7280;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+        
+        .insights-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+        }
+        
+        .insight-card {
+            padding: 25px;
+            border-radius: 10px;
+            border-left: 4px solid var(--insight-color);
+        }
+        
+        .insight-card.critical {
+            --insight-color: #dc2626;
+            background: #fef2f2;
+            border-color: #dc2626;
+        }
+        
+        .insight-card.important {
+            --insight-color: #f59e0b;
+            background: #fffbeb;
+            border-color: #f59e0b;
+        }
+        
+        .insight-card.info {
+            --insight-color: #3b82f6;
+            background: #eff6ff;
+            border-color: #3b82f6;
+        }
+        
+        .insight-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--insight-color);
+            font-size: 1.1em;
+        }
+        
+        .insight-content {
+            color: #374151;
+            line-height: 1.6;
+        }
+        
+        .paths-section {
+            background: #f0fdf4;
+            border: 1px solid #22c55e;
+            border-radius: 10px;
+            padding: 25px;
+        }
+        
+        .path-item {
+            background: white;
+            border: 1px solid #d1fae5;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .path-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .path-header {
+            display: flex;
+            align-items: center;
+            justify-content: between;
+            margin-bottom: 15px;
+        }
+        
+        .path-title {
+            font-weight: 600;
+            color: #065f46;
+        }
+        
+        .path-length {
+            background: #22c55e;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+        
+        .path-chain {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .path-node {
+            background: #dcfce7;
+            color: #166534;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+        
+        .path-arrow {
+            color: #22c55e;
+            font-weight: bold;
+        }
+        
+        .footer {
+            background: #f8fafc;
+            padding: 40px 50px;
+            border-top: 1px solid #e5e7eb;
+            color: #6b7280;
+            font-size: 0.95em;
+        }
+        
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+        }
+        
+        .methodology {
+            background: #f0f9ff;
+            border: 1px solid #0ea5e9;
+            border-radius: 10px;
+            padding: 25px;
+            margin: 30px 0;
+        }
+        
+        .methodology h3 {
+            color: #0c4a6e;
+            margin-bottom: 15px;
+        }
+        
+        .methodology p {
+            color: #075985;
+            line-height: 1.6;
+        }
+        
+        .no-data {
+            text-align: center;
+            color: #9ca3af;
+            font-style: italic;
+            padding: 40px;
+            background: #f9fafb;
+            border-radius: 10px;
+        }
+        
+        @media print {
+            body { background: white; }
+            .container { box-shadow: none; margin: 0; }
+            .metric-card:hover { transform: none; }
+            .footer { page-break-inside: avoid; }
+        }
+        
+        @media (max-width: 768px) {
+            .container { margin: 10px; }
+            .header { padding: 30px 20px; }
+            .content { padding: 30px 20px; }
+            .header-stats { gap: 20px; }
+            .analysis-grid { grid-template-columns: 1fr; }
+            .metrics-grid { grid-template-columns: 1fr; }
+            .clusters-grid { grid-template-columns: 1fr; }
+            .insights-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- En-tête -->
+        <div class="header">
+            <h1>Analyse Réseau</h1>
+            <div class="subtitle">{{folder.name}} - Dossier OSINT</div>
+            <div class="header-stats">
+                <div class="header-stat">
+                    <span class="header-stat-number">{{stats.total_entities}}</span>
+                    <span class="header-stat-label">Nœuds</span>
+                </div>
+                <div class="header-stat">
+                    <span class="header-stat-number">{{stats.total_relationships}}</span>
+                    <span class="header-stat-label">Liens</span>
+                </div>
+                <div class="header-stat">
+                    <span class="header-stat-number">{{#if stats.network_density}}{{stats.network_density}}%{{else}}0%{{/if}}</span>
+                    <span class="header-stat-label">Densité</span>
+                </div>
+                <div class="header-stat">
+                    <span class="header-stat-number">{{#if stats.avg_degree}}{{stats.avg_degree}}{{else}}0{{/if}}</span>
+                    <span class="header-stat-label">Degré moyen</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contenu principal -->
+        <div class="content">
+            <!-- Métriques du réseau -->
+            <div class="section">
+                <h2 class="section-title">
+                    📊 Métriques du réseau
+                </h2>
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-number">{{stats.total_entities}}</div>
+                        <div class="metric-label">Entités totales</div>
+                        <div class="metric-description">Nombre de nœuds dans le réseau</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-number">{{stats.total_relationships}}</div>
+                        <div class="metric-label">Relations totales</div>
+                        <div class="metric-description">Nombre de liens entre entités</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-number">{{#if stats.avg_degree}}{{stats.avg_degree}}{{else}}0{{/if}}</div>
+                        <div class="metric-label">Degré moyen</div>
+                        <div class="metric-description">Nombre moyen de connexions par entité</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-number">{{#if stats.network_density}}{{stats.network_density}}%{{else}}0%{{/if}}</div>
+                        <div class="metric-label">Densité réseau</div>
+                        <div class="metric-description">Proportion de connexions possibles réalisées</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-number">{{#if stats.clustering_coefficient}}{{stats.clustering_coefficient}}{{else}}0{{/if}}</div>
+                        <div class="metric-label">Coefficient clustering</div>
+                        <div class="metric-description">Tendance à former des groupes</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-number">{{#if stats.diameter}}{{stats.diameter}}{{else}}∞{{/if}}</div>
+                        <div class="metric-label">Diamètre</div>
+                        <div class="metric-description">Plus long chemin le plus court</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analyse de centralité -->
+            <div class="section">
+                <h2 class="section-title">
+                    ⭐ Analyse de centralité
+                </h2>
+                <div class="analysis-grid">
+                    <!-- Centralité de degré -->
+                    <div class="analysis-card">
+                        <h3>🔗 Centralité de degré</h3>
+                        {{#if centralityAnalysis.degree}}
+                        <ul class="entity-ranking">
+                            {{#each centralityAnalysis.degree}}
+                            <li>
+                                <div class="entity-info">
+                                    <span class="entity-rank">{{@index}}</span>
+                                    <span class="entity-name">{{this.name}}</span>
+                                    <span class="entity-type">{{this.type}}</span>
+                                </div>
+                                <span class="entity-score">{{this.score}}</span>
+                            </li>
+                            {{/each}}
+                        </ul>
+                        {{else}}
+                        <div class="no-data" style="padding: 20px;">Aucune donnée de centralité</div>
+                        {{/if}}
+                    </div>
+
+                    <!-- Centralité d'intermédiarité -->
+                    <div class="analysis-card">
+                        <h3>🌉 Centralité d'intermédiarité</h3>
+                        {{#if centralityAnalysis.betweenness}}
+                        <ul class="entity-ranking">
+                            {{#each centralityAnalysis.betweenness}}
+                            <li>
+                                <div class="entity-info">
+                                    <span class="entity-rank">{{@index}}</span>
+                                    <span class="entity-name">{{this.name}}</span>
+                                    <span class="entity-type">{{this.type}}</span>
+                                </div>
+                                <span class="entity-score">{{this.score}}</span>
+                            </li>
+                            {{/each}}
+                        </ul>
+                        {{else}}
+                        <div class="no-data" style="padding: 20px;">Aucune donnée d'intermédiarité</div>
+                        {{/if}}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Clusters et communautés -->
+            {{#if clusters}}
+            {{#if (count clusters)}}
+            <div class="section">
+                <h2 class="section-title">
+                    🏘️ Clusters et communautés
+                </h2>
+                <div class="clusters-grid">
+                    {{#each clusters}}
+                    <div class="cluster-card" style="--cluster-color: {{this.color}};">
+                        <div class="cluster-header">
+                            <span class="cluster-name">{{this.name}}</span>
+                            <span class="cluster-size">{{count this.entities}} entités</span>
+                        </div>
+                        <ul class="cluster-entities">
+                            {{#each this.entities}}
+                            <li>
+                                <span>{{getEntityIcon this.type}}</span>
+                                <span>{{this.name}}</span>
+                            </li>
+                            {{/each}}
+                        </ul>
+                    </div>
+                    {{/each}}
+                </div>
+            </div>
+            {{/if}}
+            {{/if}}
+
+            <!-- Matrice de relations -->
+            {{#if relationshipMatrix}}
+            <div class="section">
+                <h2 class="section-title">
+                    📋 Matrice des relations
+                </h2>
+                <div class="relationship-matrix">
+                    <table class="matrix-table">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                {{#each relationshipMatrix.types}}
+                                <th>{{this}}</th>
+                                {{/each}}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{#each relationshipMatrix.matrix}}
+                            <tr>
+                                <th>{{this.type}}</th>
+                                {{#each this.values}}
+                                <td>
+                                    <span class="matrix-cell {{#if (gt this 10)}}high{{else}}{{#if (gt this 5)}}medium{{else}}{{#if (gt this 0)}}low{{else}}none{{/if}}{{/if}}{{/if}}">
+                                        {{#if (gt this 0)}}{{this}}{{else}}-{{/if}}
+                                    </span>
+                                </td>
+                                {{/each}}
+                            </tr>
+                            {{/each}}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {{/if}}
+
+            <!-- Chemins critiques -->
+            {{#if criticalPaths}}
+            {{#if (count criticalPaths)}}
+            <div class="section">
+                <h2 class="section-title">
+                    🛤️ Chemins critiques
+                </h2>
+                <div class="paths-section">
+                    {{#each criticalPaths}}
+                    <div class="path-item">
+                        <div class="path-header">
+                            <span class="path-title">{{this.description}}</span>
+                            <span class="path-length">{{count this.path}} étapes</span>
+                        </div>
+                        <div class="path-chain">
+                            {{#each this.path}}
+                            <span class="path-node">{{this.name}}</span>
+                            {{#unless @last}}<span class="path-arrow">→</span>{{/unless}}
+                            {{/each}}
+                        </div>
+                    </div>
+                    {{/each}}
+                </div>
+            </div>
+            {{/if}}
+            {{/if}}
+
+            <!-- Insights et recommandations -->
+            <div class="section">
+                <h2 class="section-title">
+                    💡 Insights d'investigation
+                </h2>
+                <div class="insights-grid">
+                    {{#if insights.critical}}
+                    {{#each insights.critical}}
+                    <div class="insight-card critical">
+                        <div class="insight-title">🚨 Critique</div>
+                        <div class="insight-content">{{this}}</div>
+                    </div>
+                    {{/each}}
+                    {{/if}}
+                    
+                    {{#if insights.important}}
+                    {{#each insights.important}}
+                    <div class="insight-card important">
+                        <div class="insight-title">⚠️ Important</div>
+                        <div class="insight-content">{{this}}</div>
+                    </div>
+                    {{/each}}
+                    {{/if}}
+                    
+                    {{#if insights.info}}
+                    {{#each insights.info}}
+                    <div class="insight-card info">
+                        <div class="insight-title">ℹ️ Information</div>
+                        <div class="insight-content">{{this}}</div>
+                    </div>
+                    {{/each}}
+                    {{/if}}
+                    
+                    {{#unless insights}}
+                    <div class="insight-card info">
+                        <div class="insight-title">ℹ️ Analyse automatique</div>
+                        <div class="insight-content">
+                            Le réseau contient {{stats.total_entities}} entités connectées par {{stats.total_relationships}} relations. 
+                            {{#if (gt stats.avg_degree 3)}}
+                            La densité élevée des connexions suggère un réseau actif nécessitant une surveillance approfondie.
+                            {{else}}
+                            La densité modérée des connexions indique un réseau en formation ou spécialisé.
+                            {{/if}}
+                        </div>
+                    </div>
+                    {{/unless}}
+                </div>
+            </div>
+
+            <!-- Méthodologie -->
+            <div class="methodology">
+                <h3>📐 Méthodologie d'analyse</h3>
+                <p>
+                    Cette analyse réseau utilise des algorithmes de théorie des graphes pour identifier les structures, 
+                    patterns et entités critiques dans le réseau d'investigation. Les métriques de centralité permettent 
+                    d'identifier les acteurs clés, tandis que l'analyse des clusters révèle les communautés et groupes 
+                    d'intérêt. Les chemins critiques identifient les connexions importantes pour la propagation 
+                    d'informations ou d'influence dans le réseau.
+                </p>
+            </div>
+        </div>
+
+        <!-- Pied de page -->
+        <div class="footer">
+            <div class="footer-grid">
+                <div>
+                    <strong>LUCIDE - Analyse Réseau OSINT</strong><br>
+                    Police Judiciaire<br>
+                    Rapport généré le {{formatDate _meta.generatedAt 'DD/MM/YYYY HH:mm'}}<br>
+                    <em>{{_meta.generator}}</em>
+                </div>
+                <div style="text-align: right;">
+                    <strong>Classification:</strong> {{#if classification}}{{classification}}{{else}}Confidentiel{{/if}}<br>
+                    <strong>Dossier ID:</strong> {{folder.id}}<br>
+                    <strong>Version:</strong> {{_meta.version}}<br>
+                    <strong>Algorithmes:</strong> Degree, Betweenness, Clustering
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
